@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "author": "Anonymous maker",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-pi-pico",
+      "id": "pico",
+      "top": -12.06,
+      "left": -275.29,
+      "attrs": { "env": "micropython-20230426-v1.20.0" }
+    },
+    {
+      "type": "wokwi-lcd2004",
+      "id": "lcd1",
+      "top": -78.53,
+      "left": -69.19,
+      "attrs": { "pins": "i2c" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 22.88,
+      "left": -175.7,
+      "attrs": { "color": "green", "key": "ArrowUp" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn2",
+      "top": 87.42,
+      "left": -174.89,
+      "attrs": { "color": "green", "key": "ArrowDown" }
+    }
+  ],
+  "connections": [
+    [ "lcd1:GND", "pico:GND.1", "black", [ "h0" ] ],
+    [ "lcd1:VCC", "pico:3V3", "red", [ "h0" ] ],
+    [ "lcd1:SDA", "pico:GP0", "green", [ "h0" ] ],
+    [ "lcd1:SCL", "pico:GP1", "green", [ "h0" ] ],
+    [ "btn1:1.l", "pico:GND.1", "green", [ "h0" ] ],
+    [ "btn1:2.l", "pico:GP10", "green", [ "h0" ] ],
+    [ "btn2:1.l", "pico:GND.1", "green", [ "h0" ] ],
+    [ "btn2:2.l", "pico:GP11", "green", [ "h0" ] ]
+  ],
+  "dependencies": {}
+}

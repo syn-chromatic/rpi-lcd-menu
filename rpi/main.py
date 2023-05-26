@@ -9,6 +9,7 @@ from button import Button
 
 UP_BUTTON_PIN = 5
 DOWN_BUTTON_PIN = 6
+APPLY_BUTTON_PIN = 4
 LCD_ROWS = 2
 LCD_CHARS = 16
 
@@ -68,6 +69,7 @@ class LCDMenu(LCDMenuBase):
         options_list = self._get_options_list()
         option_str = options_list[self._selected]
         self._options = self._options[option_str]
+        self._selected = 0
 
 
 def get_cpu_name() -> str:
@@ -75,14 +77,17 @@ def get_cpu_name() -> str:
     return cpu
 
 
-def get_cpu_perc() -> float:
+def get_cpu_perc() -> int:
     perc = psutil.cpu_percent()
+    perc = int(perc)
     return perc
 
 
-def get_cpu_freq() -> float:
+def get_cpu_freq() -> int:
     freq = psutil.cpu_freq().current
+    freq = int(freq)
     return freq
+
 
 
 system_menu = {
@@ -110,9 +115,11 @@ screen.write_with_cursor(string, 0.0)
 
 up_button = Button(UP_BUTTON_PIN)
 down_button = Button(DOWN_BUTTON_PIN)
+apply_button = Button(APPLY_BUTTON_PIN)
 
-
+counter = 0
 while True:
+    counter += 1
     if up_button.is_pressed():
         print("Up Button Pressed")
         menu.decrement_selection()
@@ -124,5 +131,16 @@ while True:
         menu.increment_selection()
         string = menu.get_string()
         screen.write_with_cursor(string, 0.0)
+
+    if apply_button.is_pressed():
+        print("Apply Button Pressed")
+        menu.enter_option()
+        string = menu.get_string()
+        screen.write_with_cursor(string, 0.0)
+
+    if counter == 20:
+        string = menu.get_string()
+        screen.write_with_cursor(string, 0.0)
+        counter = 0
 
     sleep(0.01)

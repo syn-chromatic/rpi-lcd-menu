@@ -108,7 +108,9 @@ class CPUName(MenuOption):
 
     def get_option_name(self) -> str:
         cpu = self.get_cpu_name()
-        return cpu
+        string = "CPU: {}"
+        string = string.format(cpu)
+        return string
 
 
 class CPUPerc(MenuOption):

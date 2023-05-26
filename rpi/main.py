@@ -1,10 +1,21 @@
-import platform
-import psutil
-
 from time import sleep
+
 
 from lcd import LCDWriter
 from button import Button
+from options import (
+    MenuOption,
+    Option1,
+    Option2,
+    Option3,
+    Option4,
+    Option5,
+    Option6,
+    SystemInfo,
+    CPUName,
+    CPUPerc,
+    CPUFreq,
+)
 
 
 UP_BUTTON_PIN = 5
@@ -15,13 +26,13 @@ LCD_CHARS = 16
 
 
 class LCDMenuBase:
-    def __init__(self, rows: int, chars: int, options: dict[str, dict]):
+    def __init__(self, rows: int, chars: int, options: dict[MenuOption, dict]):
         self._rows = rows
         self._chars = chars
         self._selected = 0
         self._options = options
 
-    def _get_options_list(self) -> list[str]:
+    def _get_options_list(self) -> list[MenuOption]:
         options_list = list(self._options.keys())
         return options_list
 
@@ -37,7 +48,7 @@ class LCDMenuBase:
 
 
 class LCDMenu(LCDMenuBase):
-    def __init__(self, rows: int, chars: int, options: dict[str, dict]):
+    def __init__(self, rows: int, chars: int, options: dict[MenuOption, dict]):
         super().__init__(rows, chars, options)
 
     def increment_selection(self):
@@ -59,10 +70,12 @@ class LCDMenu(LCDMenuBase):
         string = ""
         for idx in range(st_range, en_range):
             option = options_list[idx]
+            option.update()
+            option_name = option.get_option_name()
             if idx == self._selected:
-                string += "> " + option + "\n"
+                string += "> " + option_name + "\n"
                 continue
-            string += "x " + option + "\n"
+            string += "x " + option_name + "\n"
         return string
 
     def enter_option(self):
@@ -72,38 +85,32 @@ class LCDMenu(LCDMenuBase):
         self._selected = 0
 
 
-def get_cpu_name() -> str:
-    cpu = platform.processor()
-    return cpu
+option_1 = Option1()
+option_2 = Option2()
+option_3 = Option3()
+option_4 = Option4()
+option_5 = Option5()
+option_6 = Option6()
+system_info = SystemInfo()
+cpu_name = CPUName()
+cpu_perc = CPUPerc()
+cpu_freq = CPUFreq()
 
 
-def get_cpu_perc() -> int:
-    perc = psutil.cpu_percent()
-    perc = int(perc)
-    return perc
-
-
-def get_cpu_freq() -> int:
-    freq = psutil.cpu_freq().current
-    freq = int(freq)
-    return freq
-
-
-
-system_menu = {
-    f"CPU: {get_cpu_name()}": {},
-    f"Perc: {get_cpu_perc()}%": {},
-    f"Freq: {get_cpu_freq()}Mhz": {},
+system_menu: dict[MenuOption, dict] = {
+    cpu_name: {},
+    cpu_perc: {},
+    cpu_freq: {},
 }
 
-main_menu = {
-    "Option 1": {},
-    "Option 2": {},
-    "Option 3": {},
-    "Option 4": {},
-    "Option 5": {},
-    "Option 6": {},
-    "System Info": system_menu,
+main_menu: dict[MenuOption, dict] = {
+    option_1: {},
+    option_2: {},
+    option_3: {},
+    option_4: {},
+    option_5: {},
+    option_6: {},
+    system_info: {},
 }
 
 

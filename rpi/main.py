@@ -1,4 +1,4 @@
-from time import sleep
+import time
 
 from lcd import LCDWriter
 from button import Button
@@ -17,8 +17,8 @@ from options import (
 )
 
 
-UP_BUTTON_PIN = 5
-DOWN_BUTTON_PIN = 6
+UP_BUTTON_PIN = 6
+DOWN_BUTTON_PIN = 5
 APPLY_BUTTON_PIN = 4
 LCD_ROWS = 2
 LCD_CHARS = 16
@@ -77,7 +77,7 @@ class LCDMenu(LCDMenuBase):
             string += "x " + option_name + "\n"
         return string
 
-    def enter_option(self):
+    def apply_selection(self):
         options_list = self._get_options_list()
         option_str = options_list[self._selected]
         options = self._options[option_str]
@@ -86,69 +86,113 @@ class LCDMenu(LCDMenuBase):
             self._selected = 0
 
 
-option_1 = Option1()
-option_2 = Option2()
-option_3 = Option3()
-option_4 = Option4()
-option_5 = Option5()
-option_6 = Option6()
-system_info = SystemInfo()
-cpu_name = CPUName()
-cpu_perc = CPUPerc()
-cpu_freq = CPUFreq()
+class MenuHandler:
+    def __init__(self):
+        self.main_menu = self.get_main_menu()
+        self.screen = self.get_screen()
+        self.lcd_menu = self.get_lcd_menu()
+        self.up_button = self.get_up_button()
+        self.down_button = self.get_down_button()
+        self.apply_button = self.get_apply_button()
 
+    def get_system_submenu(self) -> dict[MenuOption, dict]:
+        cpu_name = CPUName()
+        cpu_perc = CPUPerc()
+        cpu_freq = CPUFreq()
+        system_submenu: dict[MenuOption, dict] = {
+            cpu_name: {},
+            cpu_perc: {},
+            cpu_freq: {},
+        }
+        return system_submenu
 
-system_menu: dict[MenuOption, dict] = {
-    cpu_name: {},
-    cpu_perc: {},
-    cpu_freq: {},
-}
+    def get_main_menu(self) -> dict[MenuOption, dict]:
+        system_submenu = self.get_system_submenu()
 
-main_menu: dict[MenuOption, dict] = {
-    option_1: {},
-    option_2: {},
-    option_3: {},
-    option_4: {},
-    option_5: {},
-    option_6: {},
-    system_info: system_menu,
-}
+        option_1 = Option1()
+        option_2 = Option2()
+        option_3 = Option3()
+        option_4 = Option4()
+        option_5 = Option5()
+        option_6 = Option6()
+        system_info = SystemInfo()
 
+        main_menu: dict[MenuOption, dict] = {
+            option_1: {},
+            option_2: {},
+            option_3: {},
+            option_4: {},
+            option_5: {},
+            option_6: {},
+            system_info: system_submenu,
+        }
+        return main_menu
 
-screen = LCDWriter(LCD_ROWS, LCD_CHARS)
-menu = LCDMenu(LCD_ROWS, LCD_CHARS, main_menu)
+    def get_screen(self) -> LCDWriter:
+        screen = LCDWriter(LCD_ROWS, LCD_CHARS)
+        return screen
 
-string = menu.get_string()
-screen.write_with_cursor(string, 0.0)
+    def get_lcd_menu(self) -> LCDMenu:
+        lcd_menu = LCDMenu(LCD_ROWS, LCD_CHARS, self.main_menu)
+        return lcd_menu
 
-up_button = Button(UP_BUTTON_PIN)
-down_button = Button(DOWN_BUTTON_PIN)
-apply_button = Button(APPLY_BUTTON_PIN)
+    def get_up_button(self) -> Button:
+        up_button = Button(UP_BUTTON_PIN)
+        return up_button
 
-counter = 0
-while True:
-    counter += 1
-    if up_button.is_pressed():
-        print("Up Button Pressed")
-        menu.decrement_selection()
-        string = menu.get_string()
-        screen.write_with_cursor(string, 0.0)
+    def get_down_button(self) -> Button:
+        down_button = Button(DOWN_BUTTON_PIN)
+        return down_button
 
-    if down_button.is_pressed():
-        print("Down Button Pressed")
-        menu.increment_selection()
-        string = menu.get_string()
-        screen.write_with_cursor(string, 0.0)
+    def get_apply_button(self) -> Button:
+        apply_button = Button(APPLY_BUTTON_PIN)
+        return apply_button
 
-    if apply_button.is_pressed():
-        print("Apply Button Pressed")
-        menu.enter_option()
-        string = menu.get_string()
-        screen.write_with_cursor(string, 0.0)
+    def increment_option(self):
+        self.lcd_menu.increment_selection()
+        string = self.lcd_menu.get_string()
+        self.screen.write_with_cursor(string, 0.0)
 
-    if counter == 100:
-        string = menu.get_string()
-        screen.write_with_cursor(string, 0.0)
+    def decrement_option(self):
+        self.lcd_menu.decrement_selection()
+        string = self.lcd_menu.get_string()
+        self.screen.write_with_cursor(string, 0.0)
+
+    def apply_option(self):
+        self.lcd_menu.apply_selection()
+        string = self.lcd_menu.get_string()
+        self.screen.write_with_cursor(string, 0.0)
+
+    def update_options(self):
+        string = self.lcd_menu.get_string()
+        self.screen.write_with_cursor(string, 0.0)
+
+    def loop(self):
+        string = self.lcd_menu.get_string()
+        self.screen.write_with_cursor(string, 0.0)
+
         counter = 0
+        while True:
+            counter += 1
+            if self.up_button.is_pressed():
+                print("Up Button Pressed")
+                self.increment_option()
 
-    sleep(0.01)
+            if self.down_button.is_pressed():
+                print("Down Button Pressed")
+                self.decrement_option()
+
+            if self.apply_button.is_pressed():
+                print("Apply Button Pressed")
+                self.apply_option()
+
+            if counter == 100:
+                self.update_options()
+                counter = 0
+
+            time.sleep(0.01)
+
+
+if __name__ == "__main__":
+    menu_handler = MenuHandler()
+    menu_handler.loop()

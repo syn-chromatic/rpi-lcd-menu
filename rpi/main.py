@@ -1,6 +1,5 @@
 from time import sleep
 
-
 from lcd import LCDWriter
 from button import Button
 from options import (
@@ -81,8 +80,10 @@ class LCDMenu(LCDMenuBase):
     def enter_option(self):
         options_list = self._get_options_list()
         option_str = options_list[self._selected]
-        self._options = self._options[option_str]
-        self._selected = 0
+        options = self._options[option_str]
+        if options:
+            self._options = options
+            self._selected = 0
 
 
 option_1 = Option1()

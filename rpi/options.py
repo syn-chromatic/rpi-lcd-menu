@@ -116,9 +116,8 @@ class CPUPerc(MenuOption):
         self.name = self.get_option_name()
 
     @staticmethod
-    def get_cpu_perc() -> int:
-        perc = psutil.cpu_percent()
-        perc = int(perc)
+    def get_cpu_perc() -> float:
+        perc = psutil.cpu_times_percent().user
         return perc
 
     def update(self):

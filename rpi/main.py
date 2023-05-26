@@ -110,7 +110,7 @@ main_menu: dict[MenuOption, dict] = {
     option_4: {},
     option_5: {},
     option_6: {},
-    system_info: {},
+    system_info: system_menu,
 }
 
 
@@ -145,7 +145,7 @@ while True:
         string = menu.get_string()
         screen.write_with_cursor(string, 0.0)
 
-    if counter == 20:
+    if counter == 100:
         string = menu.get_string()
         screen.write_with_cursor(string, 0.0)
         counter = 0

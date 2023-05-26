@@ -1,7 +1,7 @@
 import time
 import lgpio as gp
 
-from lcd_api import LcdApi
+from .lcd_api import LcdApi
 
 # PCF8574 pin definitions
 MASK_RS = 0x01  # P0

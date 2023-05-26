@@ -22,7 +22,7 @@ class LCDMenuBase:
             en_range = self._rows
             return st_range, en_range
 
-        st_range = self._selected - self._rows - 1
+        st_range = self._selected - (self._rows - 1)
         en_range = st_range + self._rows
         return st_range, en_range
 
@@ -33,15 +33,15 @@ class LCDMenu(LCDMenuBase):
 
     def increment_selection(self, options: list[str]):
         if self._selected < len(options) - 1:
-            self.selected += 1
+            self._selected += 1
             return
-        self.selected = 0
+        self._selected = 0
 
     def decrement_selection(self, options: list[str]):
-        if self.selected > 0:
-            self.selected -= 1
+        if self._selected > 0:
+            self._selected -= 1
             return
-        self.selected = len(options) - 1
+        self._selected = len(options) - 1
 
     def get_string(self, options: list[str]) -> str:
         st_range, en_range = self._get_option_range()
@@ -49,7 +49,7 @@ class LCDMenu(LCDMenuBase):
         string = ""
         for idx in range(st_range, en_range):
             option = options[idx]
-            if idx == self.selected:
+            if idx == self._selected:
                 string += "> " + option + "\n"
                 continue
             string += "x " + option + "\n"

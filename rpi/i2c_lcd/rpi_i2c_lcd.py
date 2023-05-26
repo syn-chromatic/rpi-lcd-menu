@@ -13,7 +13,7 @@ SHIFT_DATA = 4  # P4-P7
 
 
 class I2cLcd(LcdApi):
-    def __init__(self, i2c_bus, i2c_addr, num_lines, num_columns):
+    def __init__(self, i2c_bus, i2c_addr, rows, chars):
         self.handle = gp.i2c_open(i2c_bus, i2c_addr)
         gp.i2c_write_device(self.handle, [0])
         time.sleep(0.020)  # Allow LCD time to powerup
@@ -27,9 +27,9 @@ class I2cLcd(LcdApi):
         # Put LCD into 4-bit mode
         self.hal_write_init_nibble(self.LCD_FUNCTION)
         time.sleep(0.001)
-        LcdApi.__init__(self, num_lines, num_columns)
+        LcdApi.__init__(self, rows, chars)
         cmd = self.LCD_FUNCTION
-        if num_lines > 1:
+        if rows > 1:
             cmd |= self.LCD_FUNCTION_2LINES
         self.hal_write_command(cmd)
 

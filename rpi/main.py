@@ -26,13 +26,21 @@ LCD_CHARS = 16
 
 class LCDMenuBase:
     def __init__(self, rows: int, chars: int, options: dict[MenuOption, dict]):
-        self._rows = rows
-        self._chars = chars
-        self._selected = 0
-        self._options = options
+        self._rows: int = rows
+        self._chars: int = chars
+        self._selected: int = 0
+        self._options: dict[MenuOption, dict] = options
+        self._entries: list[MenuOption] = []
 
     def _get_options_list(self) -> list[MenuOption]:
         options_list = list(self._options.keys())
+        if self._entries:
+            options_entry = None
+            for entry in self._entries:
+                options_entry = self._options[entry]
+            if options_entry:
+                entry_list = list(options_entry.keys())
+                return entry_list
         return options_list
 
     def _get_option_range(self) -> tuple[int, int]:
@@ -44,6 +52,16 @@ class LCDMenuBase:
         st_range = self._selected - (self._rows - 1)
         en_range = st_range + self._rows
         return st_range, en_range
+
+    def _add_entry(self, option: MenuOption):
+        if option in self._options:
+            if self._options[option]:
+                self._entries.append(option)
+                self._selected = 0
+
+    def _back_entry(self):
+        if self._entries:
+            self._entries.pop(-1)
 
 
 class LCDMenu(LCDMenuBase):
@@ -79,11 +97,11 @@ class LCDMenu(LCDMenuBase):
 
     def apply_selection(self):
         options_list = self._get_options_list()
-        option_str = options_list[self._selected]
-        options = self._options[option_str]
-        if options:
-            self._options = options
-            self._selected = 0
+        option = options_list[self._selected]
+        self._add_entry(option)
+
+    def back_selection(self):
+        self._back_entry()
 
 
 class MenuHandler:

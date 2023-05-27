@@ -11,6 +11,7 @@ from options import (
     Option5,
     Option6,
     SystemInfo,
+    BacklightToggle,
     CPUName,
     CPUPerc,
     CPUFreq,
@@ -136,15 +137,20 @@ class MenuHandler:
         }
         return system_submenu
 
+    def backlight_callback(self, backlight_state: bool):
+        self.screen.set_backlight(backlight_state)
+
     def get_main_menu(self) -> dict[MenuOption, dict]:
         system_submenu = self.get_system_submenu()
-
         option_1 = Option1(LCD_CHARS)
         option_2 = Option2(LCD_CHARS)
         option_3 = Option3(LCD_CHARS)
         option_4 = Option4(LCD_CHARS)
         option_5 = Option5(LCD_CHARS)
         option_6 = Option6(LCD_CHARS)
+        backlight_toggle = BacklightToggle(LCD_CHARS)
+        backlight_toggle.set_callback(self.backlight_callback)
+
         system_info = SystemInfo(LCD_CHARS)
 
         main_menu: dict[MenuOption, dict] = {
@@ -154,6 +160,7 @@ class MenuHandler:
             option_4: {},
             option_5: {},
             option_6: {},
+            backlight_toggle: {},
             system_info: system_submenu,
         }
         return main_menu

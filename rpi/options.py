@@ -1,6 +1,7 @@
 import platform
 import psutil
 
+from typing import Callable
 from abc import ABC, abstractmethod
 
 
@@ -50,12 +51,20 @@ class MenuItem:
 
 
 class MenuOption(ABC):
-    def __init__(self, chars: int):
-        self.chars = chars
+    def __init__(self):
+        self.chars: int
         self.item: MenuItem
 
     @abstractmethod
     def update(self):
+        pass
+
+    @abstractmethod
+    def set_callback(self, callback: Callable):
+        pass
+
+    @abstractmethod
+    def execute_callback(self):
         pass
 
     @abstractmethod
@@ -75,6 +84,12 @@ class Option1(MenuOption):
     def update(self):
         self.item.increment_shift_item()
 
+    def set_callback(self, _: Callable):
+        pass
+
+    def execute_callback(self):
+        pass
+
     def get_option_name(self) -> str:
         return self.item.get_formatted_item()
 
@@ -90,6 +105,12 @@ class Option2(MenuOption):
 
     def update(self):
         self.item.increment_shift_item()
+
+    def set_callback(self, _: Callable):
+        pass
+
+    def execute_callback(self):
+        pass
 
     def get_option_name(self) -> str:
         return self.item.get_formatted_item()
@@ -107,6 +128,12 @@ class Option3(MenuOption):
     def update(self):
         self.item.increment_shift_item()
 
+    def set_callback(self, _: Callable):
+        pass
+
+    def execute_callback(self):
+        pass
+
     def get_option_name(self) -> str:
         return self.item.get_formatted_item()
 
@@ -122,6 +149,12 @@ class Option4(MenuOption):
 
     def update(self):
         self.item.increment_shift_item()
+
+    def set_callback(self, _: Callable):
+        pass
+
+    def execute_callback(self):
+        pass
 
     def get_option_name(self) -> str:
         return self.item.get_formatted_item()
@@ -139,6 +172,12 @@ class Option5(MenuOption):
     def update(self):
         self.item.increment_shift_item()
 
+    def set_callback(self, _: Callable):
+        pass
+
+    def execute_callback(self):
+        pass
+
     def get_option_name(self) -> str:
         return self.item.get_formatted_item()
 
@@ -155,6 +194,12 @@ class Option6(MenuOption):
     def update(self):
         self.item.increment_shift_item()
 
+    def set_callback(self, _: Callable):
+        pass
+
+    def execute_callback(self):
+        pass
+
     def get_option_name(self) -> str:
         return self.item.get_formatted_item()
 
@@ -170,6 +215,43 @@ class SystemInfo(MenuOption):
 
     def update(self):
         self.item.increment_shift_item()
+
+    def set_callback(self, _: Callable):
+        pass
+
+    def execute_callback(self):
+        pass
+
+    def get_option_name(self) -> str:
+        return self.item.get_formatted_item()
+
+
+class BacklightToggle(MenuOption):
+    def __init__(self, chars: int):
+        self.chars = chars
+        self.item = self.make_menu_item()
+        self.backlight = False
+
+    def get_backlight_state(self) -> str:
+        if self.backlight:
+            return "ON"
+        return "OFF"
+
+    def make_menu_item(self) -> MenuItem:
+        name = "Backlight: {}"
+        backlight_state = self.get_backlight_state()
+        name = name.format(backlight_state)
+        return MenuItem(name, self.chars)
+
+    def update(self):
+        self.item.increment_shift_item()
+
+    def set_callback(self, callback: Callable):
+        self.callback = callback
+
+    def execute_callback(self):
+        self.backlight = not self.backlight
+        self.callback(self.backlight)
 
     def get_option_name(self) -> str:
         return self.item.get_formatted_item()
@@ -199,6 +281,12 @@ class CPUName(MenuOption):
         self.item = self.make_menu_item()
         self.item.increment_shift_item()
 
+    def set_callback(self, _: Callable):
+        pass
+
+    def execute_callback(self):
+        pass
+
     def get_option_name(self) -> str:
         return self.item.get_formatted_item()
 
@@ -226,6 +314,12 @@ class CPUPerc(MenuOption):
     def update(self):
         self.item = self.make_menu_item()
         self.item.increment_shift_item()
+
+    def set_callback(self, _: Callable):
+        pass
+
+    def execute_callback(self):
+        pass
 
     def get_option_name(self) -> str:
         return self.item.get_formatted_item()
@@ -255,6 +349,12 @@ class CPUFreq(MenuOption):
     def update(self):
         self.item = self.make_menu_item()
         self.item.increment_shift_item()
+
+    def set_callback(self, _: Callable):
+        pass
+
+    def execute_callback(self):
+        pass
 
     def get_option_name(self) -> str:
         return self.item.get_formatted_item()

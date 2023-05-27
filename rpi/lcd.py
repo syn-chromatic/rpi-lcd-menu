@@ -118,3 +118,9 @@ class LCDWriter(LCDWriterBase):
 
     def write(self, string: str, hold_time: float):
         self._write(string, hold_time)
+
+    def set_backlight(self, backlight_bool: bool):
+        if backlight_bool:
+            self._lcd.backlight_on()
+            return
+        self._lcd.backlight_off()

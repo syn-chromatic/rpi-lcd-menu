@@ -185,30 +185,30 @@ class MenuHandler:
     def increment_option(self):
         self.lcd_menu.increment_selection()
         string = self.lcd_menu.get_string()
-        self.screen.write_with_cursor(string, 0.0)
+        self.screen.write(string, 0.0)
 
     def decrement_option(self):
         self.lcd_menu.decrement_selection()
         string = self.lcd_menu.get_string()
-        self.screen.write_with_cursor(string, 0.0)
+        self.screen.write(string, 0.0)
 
     def apply_option(self):
         self.lcd_menu.apply_selection()
         string = self.lcd_menu.get_string()
-        self.screen.write_with_cursor(string, 0.0)
+        self.screen.write(string, 0.0)
 
     def back_option(self):
         self.lcd_menu.back_selection()
         string = self.lcd_menu.get_string()
-        self.screen.write_with_cursor(string, 0.0)
+        self.screen.write(string, 0.0)
 
     def update_options(self):
         string = self.lcd_menu.get_string()
-        self.screen.write_with_cursor(string, 0.0)
+        self.screen.write(string, 0.0)
 
     def loop(self):
         string = self.lcd_menu.get_string()
-        self.screen.write_with_cursor(string, 0.0)
+        self.screen.write(string, 0.0)
 
         counter = 0
         while True:

@@ -101,6 +101,13 @@ class LCDWriterBase:
         sleep(hold_time)
         self._lcd.blink_cursor_off()
 
+    def _write(self, string: str, hold_time: float):
+        self._lcd.blink_cursor_off()
+        segments = self._seg_string(string)
+        for segment in segments:
+            self._put_str(segment)
+        sleep(hold_time)
+
 
 class LCDWriter(LCDWriterBase):
     def __init__(self, chars: int, rows: int):
@@ -108,3 +115,6 @@ class LCDWriter(LCDWriterBase):
 
     def write_with_cursor(self, string: str, hold_time: float):
         self._write_with_cursor(string, hold_time)
+
+    def write(self, string: str, hold_time: float):
+        self._write(string, hold_time)

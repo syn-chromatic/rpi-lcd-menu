@@ -89,11 +89,12 @@ class LCDMenu(LCDMenuBase):
         self, options_list: list[MenuOption], st_range: int, en_range: int
     ):
         for idx in range(st_range, en_range):
-            option = options_list[idx]
-            if idx == self._selected:
-                option.item.is_selected = True
-                continue
-            option.item.is_selected = False
+            if idx < len(options_list):
+                option = options_list[idx]
+                if idx == self._selected:
+                    option.item.is_selected = True
+                    continue
+                option.item.is_selected = False
 
     def get_string(self) -> str:
         st_range, en_range = self._get_option_range()

@@ -102,10 +102,11 @@ class LCDMenu(LCDMenuBase):
 
         string = ""
         for idx in range(st_range, en_range):
-            option = options_list[idx]
-            option_name = option.get_option_name()
-            option.update()
-            string += option_name
+            if idx < len(options_list):
+                option = options_list[idx]
+                option_name = option.get_option_name()
+                option.update()
+                string += option_name
         return string
 
     def apply_selection(self):

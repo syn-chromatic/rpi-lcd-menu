@@ -229,8 +229,8 @@ class SystemInfo(MenuOption):
 class BacklightToggle(MenuOption):
     def __init__(self, chars: int):
         self.chars = chars
-        self.item = self.make_menu_item()
         self.backlight = False
+        self.item = self.make_menu_item()
 
     def get_backlight_state(self) -> str:
         if self.backlight:

@@ -89,12 +89,11 @@ class LCDMenu(LCDMenuBase):
         self, options_list: list[MenuOption], st_range: int, en_range: int
     ):
         for idx in range(st_range, en_range):
-            if idx < len(options_list):
-                option = options_list[idx]
-                if idx == self._selected:
-                    option.item.is_selected = True
-                    continue
-                option.item.is_selected = False
+            option = options_list[idx]
+            if idx == self._selected:
+                option.item.is_selected = True
+                continue
+            option.item.is_selected = False
 
     def get_string(self) -> str:
         st_range, en_range = self._get_option_range()
@@ -103,13 +102,10 @@ class LCDMenu(LCDMenuBase):
 
         string = ""
         for idx in range(st_range, en_range):
-            if idx < len(options_list):
-                option = options_list[idx]
-                option_name = option.get_option_name()
-                option.update()
-                string += option_name
-                continue
-            string += " " * self._chars
+            option = options_list[idx]
+            option_name = option.get_option_name()
+            option.update()
+            string += option_name
         return string
 
     def apply_selection(self):
@@ -146,8 +142,10 @@ class MenuHandler:
     def get_display_submenu(self) -> dict[MenuOption, dict]:
         backlight_toggle = BacklightToggle(LCD_CHARS)
         backlight_toggle.set_callback(self.backlight_callback)
+        option_2 = Option2(LCD_CHARS)
         display_submenu: dict[MenuOption, dict] = {
             backlight_toggle: {},
+            option_2: {},
         }
         return display_submenu
 

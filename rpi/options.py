@@ -12,25 +12,35 @@ class MenuItem:
         self.is_selected = False
 
     def get_string(self) -> str:
-        exceed_condition = self.get_exceed_condition()
-        if exceed_condition:
-            en_range = self.st_range + (self.chars - 4)
-            new_string = self.string[self.st_range : en_range]
-            new_string += ".."
-            return new_string
+        diff_length = self.get_diff_length()
+        max_trim_chars = self.get_max_trim_chars()
+        max_chars = self.get_max_chars()
+        if len(self.string) > max_chars:
+            if diff_length >= max_trim_chars:
+                en_range = self.st_range + (self.chars - 4)
+                new_string = self.string[self.st_range : en_range]
+                new_string += ".."
+                return new_string
         return self.string[self.st_range :]
 
-    def get_exceed_condition(self):
-        if (len(self.string) - self.st_range) >= (self.chars - 4):
-            if len(self.string) > (self.chars - 2):
-                return True
-        return False
+    def get_diff_length(self) -> int:
+        len_string = len(self.string)
+        return len_string - self.st_range
+
+    def get_max_trim_chars(self) -> int:
+        return self.chars - 4
+
+    def get_max_chars(self) -> int:
+        return self.chars - 2
 
     def increment_shift_item(self):
-        exceed_condition = self.get_exceed_condition()
-        if exceed_condition and self.is_selected:
-            self.st_range += 1
-            return
+        diff_length = self.get_diff_length()
+        max_trim_chars = self.get_max_trim_chars()
+        max_chars = self.get_max_chars()
+        if len(self.string) > max_chars:
+            if diff_length > max_trim_chars and self.is_selected:
+                self.st_range += 1
+                return
         self.st_range = 0
 
 

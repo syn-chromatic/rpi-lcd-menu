@@ -111,6 +111,7 @@ class LCDMenu(LCDMenuBase):
         options_list = self._get_options_list()
         option = options_list[self._selected]
         self._add_entry(option)
+        option.execute_callback()
 
     def back_selection(self):
         self._back_entry()

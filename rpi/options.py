@@ -244,6 +244,7 @@ class BacklightToggle(MenuOption):
         return MenuItem(name, self.chars)
 
     def update(self):
+        self.item = self.make_menu_item()
         self.item.increment_shift_item()
 
     def set_callback(self, callback: Callable):

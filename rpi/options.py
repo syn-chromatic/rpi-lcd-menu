@@ -11,6 +11,11 @@ class MenuItem:
         self.st_range = 0
         self.is_selected = False
 
+    def get_formatted_item(self):
+        if self.is_selected:
+            return "> " + self.get_string() + "\n"
+        return "x " + self.get_string() + "\n"
+
     def get_string(self) -> str:
         diff_length = self.get_diff_length()
         max_trim_chars = self.get_max_trim_chars()
@@ -71,7 +76,7 @@ class Option1(MenuOption):
         self.item.increment_shift_item()
 
     def get_option_name(self) -> str:
-        return self.item.get_string()
+        return self.item.get_formatted_item()
 
 
 class Option2(MenuOption):
@@ -87,7 +92,7 @@ class Option2(MenuOption):
         self.item.increment_shift_item()
 
     def get_option_name(self) -> str:
-        return self.item.get_string()
+        return self.item.get_formatted_item()
 
 
 class Option3(MenuOption):
@@ -103,7 +108,7 @@ class Option3(MenuOption):
         self.item.increment_shift_item()
 
     def get_option_name(self) -> str:
-        return self.item.get_string()
+        return self.item.get_formatted_item()
 
 
 class Option4(MenuOption):
@@ -119,7 +124,7 @@ class Option4(MenuOption):
         self.item.increment_shift_item()
 
     def get_option_name(self) -> str:
-        return self.item.get_string()
+        return self.item.get_formatted_item()
 
 
 class Option5(MenuOption):
@@ -135,7 +140,7 @@ class Option5(MenuOption):
         self.item.increment_shift_item()
 
     def get_option_name(self) -> str:
-        return self.item.get_string()
+        return self.item.get_formatted_item()
 
 
 class Option6(MenuOption):
@@ -151,7 +156,7 @@ class Option6(MenuOption):
         self.item.increment_shift_item()
 
     def get_option_name(self) -> str:
-        return self.item.get_string()
+        return self.item.get_formatted_item()
 
 
 class SystemInfo(MenuOption):
@@ -167,7 +172,7 @@ class SystemInfo(MenuOption):
         self.item.increment_shift_item()
 
     def get_option_name(self) -> str:
-        return self.item.get_string()
+        return self.item.get_formatted_item()
 
 
 class CPUName(MenuOption):
@@ -195,7 +200,7 @@ class CPUName(MenuOption):
         self.item.increment_shift_item()
 
     def get_option_name(self) -> str:
-        return self.item.get_string()
+        return self.item.get_formatted_item()
 
 
 class CPUPerc(MenuOption):
@@ -223,7 +228,7 @@ class CPUPerc(MenuOption):
         self.item.increment_shift_item()
 
     def get_option_name(self) -> str:
-        return self.item.get_string()
+        return self.item.get_formatted_item()
 
 
 class CPUFreq(MenuOption):
@@ -252,4 +257,4 @@ class CPUFreq(MenuOption):
         self.item.increment_shift_item()
 
     def get_option_name(self) -> str:
-        return self.item.get_string()
+        return self.item.get_formatted_item()

@@ -83,21 +83,27 @@ class LCDMenu(LCDMenuBase):
         options_list = self._get_options_list()
         self._selected = len(options_list) - 1
 
+    def update_selection(
+        self, options_list: list[MenuOption], st_range: int, en_range: int
+    ):
+        for idx in range(st_range, en_range):
+            option = options_list[idx]
+            if idx == self._selected:
+                option.item.is_selected = True
+                continue
+            option.item.is_selected = False
+
     def get_string(self) -> str:
         st_range, en_range = self._get_option_range()
         options_list = self._get_options_list()
+        self.update_selection(options_list, st_range, en_range)
 
         string = ""
         for idx in range(st_range, en_range):
             option = options_list[idx]
             option_name = option.get_option_name()
             option.update()
-            if idx == self._selected:
-                string += "> " + option_name + "\n"
-                option.item.is_selected = True
-                continue
-            string += "x " + option_name + "\n"
-            option.item.is_selected = False
+            string += option_name
         return string
 
     def apply_selection(self):

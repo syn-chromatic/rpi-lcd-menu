@@ -226,6 +226,28 @@ class SystemInfo(MenuOption):
         return self.item.get_formatted_item()
 
 
+class DisplayConfig(MenuOption):
+    def __init__(self, chars: int):
+        self.chars = chars
+        self.item = self.make_menu_item()
+
+    def make_menu_item(self) -> MenuItem:
+        name = "Display Config"
+        return MenuItem(name, self.chars)
+
+    def update(self):
+        self.item.increment_shift_item()
+
+    def set_callback(self, _: Callable):
+        pass
+
+    def execute_callback(self):
+        pass
+
+    def get_option_name(self) -> str:
+        return self.item.get_formatted_item()
+
+
 class BacklightToggle(MenuOption):
     def __init__(self, chars: int):
         self.chars = chars

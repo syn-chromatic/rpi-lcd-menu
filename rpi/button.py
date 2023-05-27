@@ -11,7 +11,7 @@ class Button:
 
     def register_pin(self):
         handle = gp.gpiochip_open(0)
-        gp.gpio_claim_input(handle, self.bcm_pin)
+        gp.gpio_claim_input(handle, self.bcm_pin, 32)
         return handle
 
     def get_state(self) -> Literal[0, 1]:

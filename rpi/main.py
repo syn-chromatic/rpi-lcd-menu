@@ -20,6 +20,7 @@ from options import (
 UP_BUTTON_PIN = 5
 DOWN_BUTTON_PIN = 6
 APPLY_BUTTON_PIN = 4
+BACK_BUTTON_PIN = 27
 LCD_ROWS = 2
 LCD_CHARS = 16
 
@@ -33,14 +34,13 @@ class LCDMenuBase:
         self._entries: list[MenuOption] = []
 
     def _get_options_list(self) -> list[MenuOption]:
-        options_list = list(self._options.keys())
         if self._entries:
-            options_entry = None
+            options_entry = self._options[self._entries[0]]
             for entry in self._entries:
                 options_entry = self._options[entry]
-            if options_entry:
-                entry_list = list(options_entry.keys())
-                return entry_list
+            entry_list = list(options_entry.keys())
+            return entry_list
+        options_list = list(self._options.keys())
         return options_list
 
     def _get_option_range(self) -> tuple[int, int]:
@@ -62,6 +62,7 @@ class LCDMenuBase:
     def _back_entry(self):
         if self._entries:
             self._entries.pop(-1)
+            self._selected = 0
 
 
 class LCDMenu(LCDMenuBase):
@@ -69,7 +70,8 @@ class LCDMenu(LCDMenuBase):
         super().__init__(rows, chars, options)
 
     def increment_selection(self):
-        if self._selected < len(self._options) - 1:
+        options_list = self._get_options_list()
+        if self._selected < len(options_list) - 1:
             self._selected += 1
             return
         self._selected = 0
@@ -78,7 +80,8 @@ class LCDMenu(LCDMenuBase):
         if self._selected > 0:
             self._selected -= 1
             return
-        self._selected = len(self._options) - 1
+        options_list = self._get_options_list()
+        self._selected = len(options_list) - 1
 
     def get_string(self) -> str:
         st_range, en_range = self._get_option_range()
@@ -112,6 +115,7 @@ class MenuHandler:
         self.up_button = self.get_up_button()
         self.down_button = self.get_down_button()
         self.apply_button = self.get_apply_button()
+        self.back_button = self.get_back_button()
 
     def get_system_submenu(self) -> dict[MenuOption, dict]:
         cpu_name = CPUName()
@@ -166,6 +170,10 @@ class MenuHandler:
         apply_button = Button(APPLY_BUTTON_PIN)
         return apply_button
 
+    def get_back_button(self) -> Button:
+        back_button = Button(BACK_BUTTON_PIN)
+        return back_button
+
     def increment_option(self):
         self.lcd_menu.increment_selection()
         string = self.lcd_menu.get_string()
@@ -178,6 +186,11 @@ class MenuHandler:
 
     def apply_option(self):
         self.lcd_menu.apply_selection()
+        string = self.lcd_menu.get_string()
+        self.screen.write_with_cursor(string, 0.0)
+
+    def back_option(self):
+        self.lcd_menu.back_selection()
         string = self.lcd_menu.get_string()
         self.screen.write_with_cursor(string, 0.0)
 
@@ -203,6 +216,10 @@ class MenuHandler:
             if self.apply_button.is_pressed():
                 print("Apply Button Pressed")
                 self.apply_option()
+
+            if self.back_button.is_pressed():
+                print("Back Button Pressed")
+                self.back_option()
 
             if counter == 100:
                 self.update_options()

@@ -90,8 +90,8 @@ class LCDMenu(LCDMenuBase):
         string = ""
         for idx in range(st_range, en_range):
             option = options_list[idx]
-            option.update()
             option_name = option.get_option_name()
+            option.update()
             if idx == self._selected:
                 string += "> " + option_name + "\n"
                 continue
@@ -118,9 +118,9 @@ class MenuHandler:
         self.back_button = self.get_back_button()
 
     def get_system_submenu(self) -> dict[MenuOption, dict]:
-        cpu_name = CPUName()
-        cpu_perc = CPUPerc()
-        cpu_freq = CPUFreq()
+        cpu_name = CPUName(LCD_CHARS)
+        cpu_perc = CPUPerc(LCD_CHARS)
+        cpu_freq = CPUFreq(LCD_CHARS)
         system_submenu: dict[MenuOption, dict] = {
             cpu_name: {},
             cpu_perc: {},
@@ -131,13 +131,13 @@ class MenuHandler:
     def get_main_menu(self) -> dict[MenuOption, dict]:
         system_submenu = self.get_system_submenu()
 
-        option_1 = Option1()
-        option_2 = Option2()
-        option_3 = Option3()
-        option_4 = Option4()
-        option_5 = Option5()
-        option_6 = Option6()
-        system_info = SystemInfo()
+        option_1 = Option1(LCD_CHARS)
+        option_2 = Option2(LCD_CHARS)
+        option_3 = Option3(LCD_CHARS)
+        option_4 = Option4(LCD_CHARS)
+        option_5 = Option5(LCD_CHARS)
+        option_6 = Option6(LCD_CHARS)
+        system_info = SystemInfo(LCD_CHARS)
 
         main_menu: dict[MenuOption, dict] = {
             option_1: {},

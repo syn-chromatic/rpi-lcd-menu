@@ -108,6 +108,8 @@ class LCDMenu(LCDMenuBase):
                 option_name = option.get_option_name()
                 option.update()
                 string += option_name
+                continue
+            string += " " * self._chars
         return string
 
     def apply_selection(self):

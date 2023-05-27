@@ -94,8 +94,10 @@ class LCDMenu(LCDMenuBase):
             option.update()
             if idx == self._selected:
                 string += "> " + option_name + "\n"
+                option.item.is_selected = True
                 continue
             string += "x " + option_name + "\n"
+            option.item.is_selected = False
         return string
 
     def apply_selection(self):
@@ -221,7 +223,7 @@ class MenuHandler:
                 print("Back Button Pressed")
                 self.back_option()
 
-            if counter == 100:
+            if counter == 70:
                 self.update_options()
                 counter = 0
 

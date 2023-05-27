@@ -9,19 +9,19 @@ class MenuItem:
         self.string = string
         self.chars = chars
         self.st_range = 0
-        self.on_creation = True
+        self.is_selected = False
 
     def get_string(self) -> str:
-        len_string = len(self.string[self.st_range : -1])
-        if len_string > self.chars:
-            en_range = self.st_range + 18
+        len_string = len(self.string[self.st_range:])
+        if len_string >= (self.chars - 4) and len(self.string) > (self.chars - 2):
+            en_range = self.st_range + (self.chars - 4)
             new_string = self.string[self.st_range : en_range]
             new_string += ".."
             return new_string
-        return self.string
+        return self.string[self.st_range :]
 
     def increment_shift_item(self):
-        if (len(self.string) - self.st_range) > self.chars:
+        if (len(self.string) - self.st_range) > (self.chars - 4) and len(self.string) > (self.chars - 2) and self.is_selected:
             self.st_range += 1
             return
         self.st_range = 0
@@ -30,6 +30,7 @@ class MenuItem:
 class MenuOption(ABC):
     def __init__(self, chars: int):
         self.chars = chars
+        self.item: MenuItem
 
     @abstractmethod
     def update(self):
@@ -110,7 +111,7 @@ class Option5(MenuOption):
         self.item = self.make_menu_item()
 
     def make_menu_item(self) -> MenuItem:
-        name = "Option 5"
+        name = "Option 5 This is a test"
         return MenuItem(name, self.chars)
 
     def update(self):
@@ -142,7 +143,7 @@ class SystemInfo(MenuOption):
         self.item = self.make_menu_item()
 
     def make_menu_item(self) -> MenuItem:
-        name = "Option 6"
+        name = "System Info"
         return MenuItem(name, self.chars)
 
     def update(self):

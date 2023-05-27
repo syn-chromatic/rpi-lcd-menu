@@ -12,16 +12,23 @@ class MenuItem:
         self.is_selected = False
 
     def get_string(self) -> str:
-        len_string = len(self.string[self.st_range:])
-        if len_string >= (self.chars - 4) and len(self.string) > (self.chars - 2):
+        exceed_condition = self.get_exceed_condition()
+        if exceed_condition:
             en_range = self.st_range + (self.chars - 4)
             new_string = self.string[self.st_range : en_range]
             new_string += ".."
             return new_string
         return self.string[self.st_range :]
 
+    def get_exceed_condition(self):
+        if (len(self.string) - self.st_range) >= (self.chars - 4):
+            if len(self.string) > (self.chars - 2):
+                return True
+        return False
+
     def increment_shift_item(self):
-        if (len(self.string) - self.st_range) > (self.chars - 4) and len(self.string) > (self.chars - 2) and self.is_selected:
+        exceed_condition = self.get_exceed_condition()
+        if exceed_condition and self.is_selected:
             self.st_range += 1
             return
         self.st_range = 0

@@ -260,22 +260,32 @@ class TimeTest(OptionTimeHM):
         self.change_state = False
         self.update_menu_item()
 
+    def get_hours(self) -> str:
+        if str(self.hours) == 1:
+            return "0" + str(self.hours)
+        return str(self.hours)
+
+    def get_minutes(self) -> str:
+        if str(self.minutes) == 1:
+            return "0" + str(self.minutes)
+        return str(self.minutes)
+
     def get_time_select(self) -> str:
         if self.selected == 0:
             string = ".{}.:{}"
-            string = string.format(self.hours, self.minutes)
+            string = string.format(self.get_hours(), self.get_minutes())
             return string
         string = "{}:.{}."
-        string = string.format(self.hours, self.minutes)
+        string = string.format(self.get_hours(), self.get_minutes())
         return string
 
     def get_time_change(self) -> str:
         if self.selected == 0:
             string = "<{}>:{}"
-            string = string.format(self.hours, self.minutes)
+            string = string.format(self.get_hours(), self.get_minutes())
             return string
         string = "{}:<{}>"
-        string = string.format(self.hours, self.minutes)
+        string = string.format(self.get_hours(), self.get_minutes())
         return string
 
     def get_state_string(self) -> str:

@@ -19,12 +19,11 @@ class Button:
         return self.state
 
     def is_pressed(self) -> bool:
+        self.p_state = self.state
         state = self.get_state()
-        bool_state = False
-        if self.p_state == 0 and state == 1:
-            bool_state = True
-        self.p_state = state
-        return bool_state
+        if state == 1 and self.p_state == 0:
+            return True
+        return False
 
     def __del__(self):
         if hasattr(self, "hanlde"):

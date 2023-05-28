@@ -56,6 +56,18 @@ class OptionRange(Option):
         pass
 
     @abstractmethod
+    def get_hold_state(self) -> bool:
+        pass
+
+    @abstractmethod
+    def advance_state(self):
+        pass
+
+    @abstractmethod
+    def back_state(self):
+        pass
+
+    @abstractmethod
     def increment(self):
         pass
 
@@ -70,6 +82,10 @@ class OptionTimeHM(Option):
         self.selected: int = 0
         self.select_state: bool = False
         self.change_state: bool = False
+
+    @abstractmethod
+    def get_hold_state(self) -> bool:
+        pass
 
     @abstractmethod
     def advance_state(self):

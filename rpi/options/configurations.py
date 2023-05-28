@@ -239,6 +239,19 @@ class TickRate(OptionRange):
     def get_value(self):
         return self.state_callback()
 
+    def get_hold_state(self) -> bool:
+        if self.change_state:
+            return True
+        return False
+
+    def advance_state(self):
+        if not self.change_state:
+            self.change_state = True
+
+    def back_state(self):
+        if self.change_state:
+            self.change_state = False
+
     def increment(self):
         value = self.get_value() + self.step
         if value <= self.max_range:
@@ -314,6 +327,11 @@ class TimeTest(OptionTimeHM):
 
     def get_string(self) -> str:
         return self.item.get_formatted()
+
+    def get_hold_state(self) -> bool:
+        if self.select_state or self.change_state:
+            return True
+        return False
 
     def advance_state(self):
         if not self.select_state:

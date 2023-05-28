@@ -79,13 +79,8 @@ class LCDMenu(LCDMenuBase):
         options_list = self._get_options_list()
         option = options_list[self._selected]
 
-        if isinstance(option, OptionRange):
-            if option.change_state:
-                option.increment()
-                option.update()
-                return
-        if isinstance(option, OptionTimeHM):
-            if option.change_state or option.select_state:
+        if isinstance(option, (OptionRange, OptionTimeHM)):
+            if option.get_hold_state():
                 option.increment()
                 option.update()
                 return
@@ -99,14 +94,8 @@ class LCDMenu(LCDMenuBase):
         options_list = self._get_options_list()
         option = options_list[self._selected]
 
-        if isinstance(option, OptionRange):
-            if option.change_state:
-                option.decrement()
-                option.update()
-                return
-
-        if isinstance(option, OptionTimeHM):
-            if option.change_state or option.select_state:
+        if isinstance(option, (OptionRange, OptionTimeHM)):
+            if option.get_hold_state():
                 option.decrement()
                 option.update()
                 return
@@ -148,27 +137,16 @@ class LCDMenu(LCDMenuBase):
             option.execute_callback()
             option.update()
 
-        if isinstance(option, OptionRange):
-            option.change_state = True
-            option.update()
-
-        if isinstance(option, OptionTimeHM):
+        if isinstance(option, (OptionRange, OptionTimeHM)):
             option.advance_state()
             option.update()
 
     def back_selection(self):
         options_list = self._get_options_list()
         option = options_list[self._selected]
-        if isinstance(option, OptionRange):
-            if option.change_state:
-                option.change_state = False
-                option.update()
-                return
-
-        if isinstance(option, OptionTimeHM):
+        if isinstance(option, (OptionRange, OptionTimeHM)):
             option.back_state()
             option.update()
-            return
 
         self._back_entry()
 

@@ -261,12 +261,12 @@ class TimeTest(OptionTimeHM):
         self.update_menu_item()
 
     def get_hours(self) -> str:
-        if str(self.hours) == 1:
+        if len(str(self.hours)) == 1:
             return "0" + str(self.hours)
         return str(self.hours)
 
     def get_minutes(self) -> str:
-        if str(self.minutes) == 1:
+        if len(str(self.minutes)) == 1:
             return "0" + str(self.minutes)
         return str(self.minutes)
 

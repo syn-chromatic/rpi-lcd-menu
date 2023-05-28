@@ -3,7 +3,7 @@ import time
 from lcd import LCDWriter
 from button import Button
 
-from options.abstracts import Option, OptionToggle
+from options.abstracts import Option, OptionToggle, OptionRange
 from options.item import MenuItem
 from options.configurations import (
     Option1,
@@ -15,6 +15,7 @@ from options.configurations import (
     DisplayConfig,
     SystemInfo,
     BacklightToggle,
+    TickRate,
     CPUName,
     CPUPerc,
     CPUFreq,
@@ -75,16 +76,32 @@ class LCDMenu(LCDMenuBase):
 
     def increment_selection(self):
         options_list = self._get_options_list()
+        option = options_list[self._selected]
+
+        if isinstance(option, OptionRange):
+            if option.change_state:
+                option.increment()
+                option.update()
+                return
+
         if self._selected < len(options_list) - 1:
             self._selected += 1
             return
         self._selected = 0
 
     def decrement_selection(self):
+        options_list = self._get_options_list()
+        option = options_list[self._selected]
+
+        if isinstance(option, OptionRange):
+            if option.change_state:
+                option.decrement()
+                option.update()
+                return
+
         if self._selected > 0:
             self._selected -= 1
             return
-        options_list = self._get_options_list()
         self._selected = len(options_list) - 1
 
     def update_selection(
@@ -116,15 +133,29 @@ class LCDMenu(LCDMenuBase):
         self._add_entry(option)
         if isinstance(option, OptionToggle):
             option.execute_callback()
+            option.update()
+
+        if isinstance(option, OptionRange):
+            option.change_state = True
+            option.update()
 
     def back_selection(self):
+        options_list = self._get_options_list()
+        option = options_list[self._selected]
+        if isinstance(option, OptionRange):
+            if option.change_state:
+                option.change_state = False
+                option.update()
+                return
+
         self._back_entry()
 
 
 class MenuHandler:
     def __init__(self):
-        self.main_menu = self.get_main_menu()
+        self.tick_rate = 80
         self.screen = self.get_screen()
+        self.main_menu = self.get_main_menu()
         self.lcd_menu = self.get_lcd_menu()
         self.up_button = self.get_up_button()
         self.down_button = self.get_down_button()
@@ -142,6 +173,12 @@ class MenuHandler:
         }
         return system_submenu
 
+    def set_tick_rate(self, tick_rate: int):
+        self.tick_rate = tick_rate
+
+    def get_tick_rate(self):
+        return self.tick_rate
+
     def get_display_submenu(self) -> dict[Option, dict]:
         callback = self.backlight_callback
         state_callback = self.get_state_callback
@@ -150,17 +187,22 @@ class MenuHandler:
             MenuItem(LCD_CHARS), callback, state_callback
         )
 
-        option_2 = Option2(MenuItem(LCD_CHARS))
+        assign_callback = self.set_tick_rate
+        state_callback = self.get_tick_rate
+        tick_rate = TickRate(
+            MenuItem(LCD_CHARS), 10, 100, 5, assign_callback, state_callback
+        )
+
         display_submenu: dict[Option, dict] = {
             backlight_toggle: {},
-            option_2: {},
+            tick_rate: {},
         }
         return display_submenu
 
     def backlight_callback(self, backlight_state: bool):
         self.screen.set_backlight(backlight_state)
 
-    def get_state_callback(self):
+    def get_state_callback(self) -> bool:
         return self.screen._lcd.backlight
 
     def get_main_menu(self) -> dict[Option, dict]:
@@ -260,7 +302,7 @@ class MenuHandler:
                 print("Back Button Pressed")
                 self.back_option()
 
-            if counter == 70:
+            if counter == self.tick_rate:
                 self.update_options()
                 counter = 0
 

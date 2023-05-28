@@ -23,9 +23,38 @@ class OptionToggle(Option):
         self.state_callback: Callable = state_callback
 
     @abstractmethod
-    def get_state(self):
+    def get_state(self) -> bool:
         pass
 
     @abstractmethod
     def execute_callback(self):
         pass
+
+
+class OptionRange(Option):
+    def __init__(
+        self,
+        min_range: int,
+        max_range: int,
+        step: int,
+        assign_callback: Callable,
+        state_callback: Callable,
+    ):
+        self.min_range: int = min_range
+        self.max_range: int = max_range
+        self.step: int = step
+        self.assign_callback: Callable = assign_callback
+        self.state_callback: Callable = state_callback
+        self.change_state: bool = False
+
+    @abstractmethod
+    def get_state(self) -> int:
+        pass
+
+    @abstractmethod
+    def increment(self):
+        pass
+
+    def decrement(self):
+        pass
+

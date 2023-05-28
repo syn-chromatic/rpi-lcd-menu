@@ -3,7 +3,7 @@ import psutil
 
 from typing import Callable
 
-from options.abstracts import Option, OptionToggle
+from options.abstracts import Option, OptionToggle, OptionRange
 from options.item import MenuItem
 
 
@@ -78,7 +78,7 @@ class Option5(Option):
         self.update_menu_item()
 
     def update_menu_item(self):
-        string = "Option 6"
+        string = "Option 5 This is a test"
         self.item.set_string(string)
 
     def update(self):
@@ -164,8 +164,62 @@ class BacklightToggle(OptionToggle):
         return self.state_callback()
 
     def execute_callback(self):
-        self.backlight = not self.backlight
-        self.callback(self.backlight)
+        state = not self.get_state()
+        self.callback(state)
+
+
+class TickRate(OptionRange):
+    def __init__(
+        self,
+        item: MenuItem,
+        min_range: int,
+        max_range: int,
+        step: int,
+        assign_callback: Callable,
+        state_callback: Callable,
+    ):
+        self.item = item
+        self.min_range = min_range
+        self.max_range = max_range
+        self.step = step
+        self.assign_callback = assign_callback
+        self.state_callback = state_callback
+        self.change_state = False
+        self.update_menu_item()
+
+    def get_state_string(self):
+        if self.change_state:
+            string = "<{}>"
+            string = string.format(self.get_state())
+            return string
+        string = ".{}."
+        string = string.format(self.get_state())
+        return string
+
+    def update_menu_item(self):
+        string = "TickRate: {}"
+        string = string.format(self.get_state_string())
+        self.item.set_string(string)
+
+    def update(self):
+        self.update_menu_item()
+        self.item.increment_shift_item()
+
+    def get_string(self) -> str:
+        return self.item.get_formatted()
+
+    def get_state(self):
+        return self.state_callback()
+
+    def increment(self):
+        value = self.get_state() + self.step
+        if value <= self.max_range:
+            self.assign_callback(value)
+
+    def decrement(self):
+        value = self.get_state() - self.step
+        if value >= self.min_range:
+            self.assign_callback(value)
 
 
 class CPUName(Option):

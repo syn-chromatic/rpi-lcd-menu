@@ -2,8 +2,10 @@ import time
 
 from lcd import LCDWriter
 from button import Button
-from options import (
-    MenuOption,
+
+from options.abstracts import Option, OptionToggle
+from options.item import MenuItem
+from options.configurations import (
     Option1,
     Option2,
     Option3,
@@ -28,14 +30,14 @@ LCD_CHARS = 16
 
 
 class LCDMenuBase:
-    def __init__(self, rows: int, chars: int, options: dict[MenuOption, dict]):
+    def __init__(self, rows: int, chars: int, options: dict[Option, dict]):
         self._rows: int = rows
         self._chars: int = chars
         self._selected: int = 0
-        self._options: dict[MenuOption, dict] = options
-        self._entries: list[MenuOption] = []
+        self._options: dict[Option, dict] = options
+        self._entries: list[Option] = []
 
-    def _get_options_list(self) -> list[MenuOption]:
+    def _get_options_list(self) -> list[Option]:
         if self._entries:
             options_entry = self._options[self._entries[0]]
             for entry in self._entries:
@@ -55,7 +57,7 @@ class LCDMenuBase:
         en_range = st_range + self._rows
         return st_range, en_range
 
-    def _add_entry(self, option: MenuOption):
+    def _add_entry(self, option: Option):
         if option in self._options:
             if self._options[option]:
                 self._entries.append(option)
@@ -68,7 +70,7 @@ class LCDMenuBase:
 
 
 class LCDMenu(LCDMenuBase):
-    def __init__(self, rows: int, chars: int, options: dict[MenuOption, dict]):
+    def __init__(self, rows: int, chars: int, options: dict[Option, dict]):
         super().__init__(rows, chars, options)
 
     def increment_selection(self):
@@ -86,7 +88,7 @@ class LCDMenu(LCDMenuBase):
         self._selected = len(options_list) - 1
 
     def update_selection(
-        self, options_list: list[MenuOption], st_range: int, en_range: int
+        self, options_list: list[Option], st_range: int, en_range: int
     ):
         for idx in range(st_range, en_range):
             option = options_list[idx]
@@ -103,7 +105,7 @@ class LCDMenu(LCDMenuBase):
         string = ""
         for idx in range(st_range, en_range):
             option = options_list[idx]
-            option_name = option.get_option_name()
+            option_name = option.get_string()
             option.update()
             string += option_name
         return string
@@ -112,7 +114,8 @@ class LCDMenu(LCDMenuBase):
         options_list = self._get_options_list()
         option = options_list[self._selected]
         self._add_entry(option)
-        option.execute_callback()
+        if isinstance(option, OptionToggle):
+            option.execute_callback()
 
     def back_selection(self):
         self._back_entry()
@@ -128,22 +131,27 @@ class MenuHandler:
         self.apply_button = self.get_apply_button()
         self.back_button = self.get_back_button()
 
-    def get_system_submenu(self) -> dict[MenuOption, dict]:
-        cpu_name = CPUName(LCD_CHARS)
-        cpu_perc = CPUPerc(LCD_CHARS)
-        cpu_freq = CPUFreq(LCD_CHARS)
-        system_submenu: dict[MenuOption, dict] = {
+    def get_system_submenu(self) -> dict[Option, dict]:
+        cpu_name = CPUName(MenuItem(LCD_CHARS))
+        cpu_perc = CPUPerc(MenuItem(LCD_CHARS))
+        cpu_freq = CPUFreq(MenuItem(LCD_CHARS))
+        system_submenu: dict[Option, dict] = {
             cpu_name: {},
             cpu_perc: {},
             cpu_freq: {},
         }
         return system_submenu
 
-    def get_display_submenu(self) -> dict[MenuOption, dict]:
-        backlight_toggle = BacklightToggle(LCD_CHARS)
-        backlight_toggle.set_callback(self.backlight_callback)
-        option_2 = Option2(LCD_CHARS)
-        display_submenu: dict[MenuOption, dict] = {
+    def get_display_submenu(self) -> dict[Option, dict]:
+        callback = self.backlight_callback
+        state_callback = self.get_state_callback
+
+        backlight_toggle = BacklightToggle(
+            MenuItem(LCD_CHARS), callback, state_callback
+        )
+
+        option_2 = Option2(MenuItem(LCD_CHARS))
+        display_submenu: dict[Option, dict] = {
             backlight_toggle: {},
             option_2: {},
         }
@@ -152,21 +160,24 @@ class MenuHandler:
     def backlight_callback(self, backlight_state: bool):
         self.screen.set_backlight(backlight_state)
 
-    def get_main_menu(self) -> dict[MenuOption, dict]:
+    def get_state_callback(self):
+        return self.screen._lcd.backlight
+
+    def get_main_menu(self) -> dict[Option, dict]:
         system_submenu = self.get_system_submenu()
         display_submenu = self.get_display_submenu()
 
-        option_1 = Option1(LCD_CHARS)
-        option_2 = Option2(LCD_CHARS)
-        option_3 = Option3(LCD_CHARS)
-        option_4 = Option4(LCD_CHARS)
-        option_5 = Option5(LCD_CHARS)
-        option_6 = Option6(LCD_CHARS)
+        option_1 = Option1(MenuItem(LCD_CHARS))
+        option_2 = Option2(MenuItem(LCD_CHARS))
+        option_3 = Option3(MenuItem(LCD_CHARS))
+        option_4 = Option4(MenuItem(LCD_CHARS))
+        option_5 = Option5(MenuItem(LCD_CHARS))
+        option_6 = Option6(MenuItem(LCD_CHARS))
 
-        display_config = DisplayConfig(LCD_CHARS)
-        system_info = SystemInfo(LCD_CHARS)
+        display_config = DisplayConfig(MenuItem(LCD_CHARS))
+        system_info = SystemInfo(MenuItem(LCD_CHARS))
 
-        main_menu: dict[MenuOption, dict] = {
+        main_menu: dict[Option, dict] = {
             option_1: {},
             option_2: {},
             option_3: {},

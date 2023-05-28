@@ -5,22 +5,8 @@ from button import Button
 
 from options.abstracts import Option, OptionToggle, OptionRange, OptionTimeHM
 from options.item import MenuItem
-from options.configurations import (
-    Option1,
-    Option2,
-    Option3,
-    Option4,
-    Option5,
-    Option6,
-    DisplayConfig,
-    SystemInfo,
-    BacklightToggle,
-    TickRate,
-    TimeTest,
-    CPUName,
-    CPUPerc,
-    CPUFreq,
-)
+from options.configurations import CPUName, CPUPerc, CPUFreq
+from options.bases import StaticBase, RangeBase, ToggleBase, TimeBase
 
 
 UP_BUTTON_PIN = 5
@@ -184,23 +170,27 @@ class MenuHandler:
     def get_display_submenu(self) -> dict[Option, dict]:
         callback = self.backlight_callback
         state_callback = self.get_state_callback
+        backlight_item = MenuItem(LCD_CHARS)
 
-        backlight_toggle = BacklightToggle(
-            MenuItem(LCD_CHARS), callback, state_callback
+        backlight_toggle = ToggleBase(
+            "Backlight", backlight_item, callback, state_callback
         )
 
         assign_callback = self.set_tick_rate
         state_callback = self.get_tick_rate
-        tick_rate = TickRate(
-            MenuItem(LCD_CHARS), 10, 100, 5, assign_callback, state_callback
+        tick_item = MenuItem(LCD_CHARS)
+
+        tick_rate = RangeBase(
+            "Tickrate", tick_item, 10, 90, 5, assign_callback, state_callback
         )
 
-        time_test = TimeTest(MenuItem(LCD_CHARS))
+        time_item = MenuItem(LCD_CHARS)
+        time_option = TimeBase("Time", time_item)
 
         display_submenu: dict[Option, dict] = {
             backlight_toggle: {},
             tick_rate: {},
-            time_test: {},
+            time_option: {},
         }
         return display_submenu
 
@@ -214,15 +204,15 @@ class MenuHandler:
         system_submenu = self.get_system_submenu()
         display_submenu = self.get_display_submenu()
 
-        option_1 = Option1(MenuItem(LCD_CHARS))
-        option_2 = Option2(MenuItem(LCD_CHARS))
-        option_3 = Option3(MenuItem(LCD_CHARS))
-        option_4 = Option4(MenuItem(LCD_CHARS))
-        option_5 = Option5(MenuItem(LCD_CHARS))
-        option_6 = Option6(MenuItem(LCD_CHARS))
+        option_1 = StaticBase("Option 1", MenuItem(LCD_CHARS))
+        option_2 = StaticBase("Option 2", MenuItem(LCD_CHARS))
+        option_3 = StaticBase("Option 3", MenuItem(LCD_CHARS))
+        option_4 = StaticBase("Option 4", MenuItem(LCD_CHARS))
+        option_5 = StaticBase("Option 5", MenuItem(LCD_CHARS))
+        option_6 = StaticBase("Option 6", MenuItem(LCD_CHARS))
 
-        display_config = DisplayConfig(MenuItem(LCD_CHARS))
-        system_info = SystemInfo(MenuItem(LCD_CHARS))
+        display_config = StaticBase("Display Config", MenuItem(LCD_CHARS))
+        system_info = StaticBase("System Info", MenuItem(LCD_CHARS))
 
         main_menu: dict[Option, dict] = {
             option_1: {},

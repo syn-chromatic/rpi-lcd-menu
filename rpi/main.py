@@ -3,7 +3,7 @@ import time
 from lcd import LCDWriter
 from button import Button
 
-from options.abstracts import Option, OptionToggle, OptionRange
+from options.abstracts import Option, OptionToggle, OptionRange, OptionTimeHM
 from options.item import MenuItem
 from options.configurations import (
     Option1,
@@ -16,6 +16,7 @@ from options.configurations import (
     SystemInfo,
     BacklightToggle,
     TickRate,
+    TimeTest,
     CPUName,
     CPUPerc,
     CPUFreq,
@@ -140,6 +141,10 @@ class LCDMenu(LCDMenuBase):
             option.change_state = True
             option.update()
 
+        if isinstance(option, OptionTimeHM):
+            option.advance_state()
+            option.update()
+
     def back_selection(self):
         options_list = self._get_options_list()
         option = options_list[self._selected]
@@ -148,6 +153,11 @@ class LCDMenu(LCDMenuBase):
                 option.change_state = False
                 option.update()
                 return
+
+        if isinstance(option, OptionTimeHM):
+            option.back_state()
+            option.update()
+            return
 
         self._back_entry()
 
@@ -194,9 +204,12 @@ class MenuHandler:
             MenuItem(LCD_CHARS), 10, 100, 5, assign_callback, state_callback
         )
 
+        time_test = TimeTest()
+
         display_submenu: dict[Option, dict] = {
             backlight_toggle: {},
             tick_rate: {},
+            time_test: {},
         }
         return display_submenu
 

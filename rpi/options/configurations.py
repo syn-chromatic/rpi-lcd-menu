@@ -3,7 +3,7 @@ import psutil
 
 from typing import Callable
 
-from options.abstracts import Option, OptionToggle, OptionRange
+from options.abstracts import Option, OptionToggle, OptionRange, OptionTimeHM
 from options.item import MenuItem
 
 
@@ -216,10 +216,10 @@ class TickRate(OptionRange):
     def get_state_string(self):
         if self.change_state:
             string = "<{}>"
-            string = string.format(self.get_state())
+            string = string.format(self.get_value())
             return string
         string = ".{}."
-        string = string.format(self.get_state())
+        string = string.format(self.get_value())
         return string
 
     def update_menu_item(self):
@@ -236,18 +236,117 @@ class TickRate(OptionRange):
     def get_string(self) -> str:
         return self.item.get_formatted()
 
-    def get_state(self):
+    def get_value(self):
         return self.state_callback()
 
     def increment(self):
-        value = self.get_state() + self.step
+        value = self.get_value() + self.step
         if value <= self.max_range:
             self.assign_callback(value)
 
     def decrement(self):
-        value = self.get_state() - self.step
+        value = self.get_value() - self.step
         if value >= self.min_range:
             self.assign_callback(value)
+
+
+class TimeTest(OptionTimeHM):
+    def __init__(self):
+        self.hours = 0
+        self.minutes = 0
+        self.selected = 0
+        self.select_state = False
+        self.change_state = False
+
+    def get_time_select(self) -> str:
+        if self.selected == 0:
+            string = ".{}.:{}"
+            string = string.format(self.hours, self.minutes)
+            return string
+        string = "{}:.{}."
+        string = string.format(self.hours, self.minutes)
+        return string
+
+    def get_time_change(self) -> str:
+        if self.selected == 0:
+            string = "<{}>:{}"
+            string = string.format(self.hours, self.minutes)
+            return string
+        string = "{}:<{}>"
+        string = string.format(self.hours, self.minutes)
+        return string
+
+    def get_state_string(self) -> str:
+        if self.select_state and not self.change_state:
+            string = self.get_time_select()
+            return string
+
+        string = self.get_time_change()
+        return string
+
+    def update_menu_item(self):
+        string = "Time: {}"
+        string = string.format(self.get_state_string())
+        self.item.set_string(string)
+
+    def update(self):
+        self.update_menu_item()
+
+    def update_shift(self):
+        self.item.increment_shift_item()
+
+    def get_string(self) -> str:
+        return self.item.get_formatted()
+
+    def advance_state(self):
+        if not self.select_state:
+            self.select_state = True
+            return
+        self.change_state = True
+
+    def back_state(self):
+        if self.change_state:
+            self.change_state = False
+            return
+        self.select_state = False
+
+    def increment_selected(self):
+        if self.selected == 0:
+            self.selected = 1
+            return
+        self.selected = 0
+
+    def increment_time(self):
+        if self.selected == 0:
+            if self.hours + 1 < 24:
+                self.hours += 1
+
+        elif self.selected == 1:
+            if self.minutes + 1 < 60:
+                self.minutes += 1
+
+    def decrement_time(self):
+        if self.selected == 0:
+            if self.hours - 1 >= 0:
+                self.hours -= 1
+
+        elif self.selected == 1:
+            if self.minutes - 1 >= 0:
+                self.minutes -= 1
+
+    def increment(self):
+        if self.select_state and not self.change_state:
+            self.increment_selected()
+            return
+        if self.select_state and self.change_state:
+            self.increment_time()
+
+    def decrement(self):
+        if self.select_state and not self.change_state:
+            self.increment_selected()
+            return
+        if self.select_state and self.change_state:
+            self.decrement_time()
 
 
 class CPUName(Option):

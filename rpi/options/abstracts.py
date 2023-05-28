@@ -52,7 +52,31 @@ class OptionRange(Option):
         self.change_state: bool = False
 
     @abstractmethod
-    def get_state(self) -> int:
+    def get_value(self) -> int:
+        pass
+
+    @abstractmethod
+    def increment(self):
+        pass
+
+    def decrement(self):
+        pass
+
+
+class OptionTimeHM(Option):
+    def __init__(self):
+        self.hours: int = 0
+        self.minutes: int = 0
+        self.selected: int = 0
+        self.select_state: bool = False
+        self.change_state: bool = False
+
+    @abstractmethod
+    def advance_state(self):
+        pass
+
+    @abstractmethod
+    def back_state(self):
         pass
 
     @abstractmethod

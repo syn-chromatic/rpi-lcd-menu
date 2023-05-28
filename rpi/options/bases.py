@@ -86,7 +86,7 @@ class RangeBase(OptionRange):
             string = "<{}>"
             string = string.format(self.get_value())
             return string
-        string = ".{}."
+        string = "{}"
         string = string.format(self.get_value())
         return string
 

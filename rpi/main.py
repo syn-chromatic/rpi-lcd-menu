@@ -204,12 +204,14 @@ class MenuHandler:
         system_submenu = self.get_system_submenu()
         display_submenu = self.get_display_submenu()
 
+        rolling_text = "Testing rolling option"
+
         option_1 = StaticBase("Option 1", MenuItem(LCD_CHARS))
         option_2 = StaticBase("Option 2", MenuItem(LCD_CHARS))
         option_3 = StaticBase("Option 3", MenuItem(LCD_CHARS))
         option_4 = StaticBase("Option 4", MenuItem(LCD_CHARS))
         option_5 = StaticBase("Option 5", MenuItem(LCD_CHARS))
-        option_6 = StaticBase("Option 6", MenuItem(LCD_CHARS))
+        rolling = StaticBase(rolling_text, MenuItem(LCD_CHARS))
 
         display_config = StaticBase("Display Config", MenuItem(LCD_CHARS))
         system_info = StaticBase("System Info", MenuItem(LCD_CHARS))
@@ -220,7 +222,7 @@ class MenuHandler:
             option_3: {},
             option_4: {},
             option_5: {},
-            option_6: {},
+            rolling: {},
             display_config: display_submenu,
             system_info: system_submenu,
         }

@@ -283,7 +283,12 @@ class TimeTest(OptionTimeHM):
             string = self.get_time_select()
             return string
 
-        string = self.get_time_change()
+        elif self.select_state and self.change_state:
+            string = self.get_time_change()
+            return string
+
+        string = "{}:{}"
+        string = string.format(self.hours, self.minutes)
         return string
 
     def update_menu_item(self):

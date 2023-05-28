@@ -26,5 +26,5 @@ class Button:
         return False
 
     def __del__(self):
-        if hasattr(self, "hanlde"):
+        if hasattr(self, "handle"):
             gp.gpiochip_close(self.handle)

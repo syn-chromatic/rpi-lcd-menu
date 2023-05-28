@@ -258,6 +258,7 @@ class TimeTest(OptionTimeHM):
         self.selected = 0
         self.select_state = False
         self.change_state = False
+        self.update_menu_item()
 
     def get_time_select(self) -> str:
         if self.selected == 0:

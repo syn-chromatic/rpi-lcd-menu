@@ -84,6 +84,11 @@ class LCDMenu(LCDMenuBase):
                 option.increment()
                 option.update()
                 return
+        if isinstance(option, OptionTimeHM):
+            if option.change_state or option.select_state:
+                option.increment()
+                option.update()
+                return
 
         if self._selected < len(options_list) - 1:
             self._selected += 1
@@ -96,6 +101,12 @@ class LCDMenu(LCDMenuBase):
 
         if isinstance(option, OptionRange):
             if option.change_state:
+                option.decrement()
+                option.update()
+                return
+
+        if isinstance(option, OptionTimeHM):
+            if option.change_state or option.select_state:
                 option.decrement()
                 option.update()
                 return

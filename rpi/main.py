@@ -145,8 +145,10 @@ class LCDMenu(LCDMenuBase):
         options_list = self._get_options_list()
         option = options_list[self._selected]
         if isinstance(option, (OptionRange, OptionTimeHM)):
-            option.back_state()
-            option.update()
+            if option.get_hold_state():
+                option.back_state()
+                option.update()
+                return
 
         self._back_entry()
 

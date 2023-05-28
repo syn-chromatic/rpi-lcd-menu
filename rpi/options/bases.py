@@ -142,19 +142,19 @@ class TimeBase(OptionTimeHM):
         self.change_state = False
         self.update_menu_item()
 
-    def get_hours(self) -> str:
+    def get_hours_str(self) -> str:
         if len(str(self.hours)) == 1:
             return "0" + str(self.hours)
         return str(self.hours)
 
-    def get_minutes(self) -> str:
+    def get_minutes_str(self) -> str:
         if len(str(self.minutes)) == 1:
             return "0" + str(self.minutes)
         return str(self.minutes)
 
     def get_time_select(self) -> str:
-        hours = self.get_hours()
-        minutes = self.get_minutes()
+        hours = self.get_hours_str()
+        minutes = self.get_minutes_str()
 
         if self.selected == 0:
             string = ".{}.:{}"
@@ -165,8 +165,8 @@ class TimeBase(OptionTimeHM):
         return string
 
     def get_time_change(self) -> str:
-        hours = self.get_hours()
-        minutes = self.get_minutes()
+        hours = self.get_hours_str()
+        minutes = self.get_minutes_str()
 
         if self.selected == 0:
             string = "<{}>:{}"
@@ -185,8 +185,8 @@ class TimeBase(OptionTimeHM):
             string = self.get_time_change()
             return string
 
-        hours = self.get_hours()
-        minutes = self.get_minutes()
+        hours = self.get_hours_str()
+        minutes = self.get_minutes_str()
 
         string = "{}:{}"
         string = string.format(hours, minutes)
@@ -222,6 +222,7 @@ class TimeBase(OptionTimeHM):
             self.change_state = False
             return
         self.select_state = False
+        self.selected = 0
 
     def increment_selected(self):
         if self.selected == 0:

@@ -204,7 +204,7 @@ class MenuHandler:
             MenuItem(LCD_CHARS), 10, 100, 5, assign_callback, state_callback
         )
 
-        time_test = TimeTest()
+        time_test = TimeTest(MenuItem(LCD_CHARS))
 
         display_submenu: dict[Option, dict] = {
             backlight_toggle: {},

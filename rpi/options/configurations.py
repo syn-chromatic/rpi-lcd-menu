@@ -251,7 +251,8 @@ class TickRate(OptionRange):
 
 
 class TimeTest(OptionTimeHM):
-    def __init__(self):
+    def __init__(self, item: MenuItem):
+        self.item = item
         self.hours = 0
         self.minutes = 0
         self.selected = 0

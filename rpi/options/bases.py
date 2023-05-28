@@ -35,10 +35,11 @@ class ToggleBase(OptionToggle):
 
     def update_menu_item(self):
         string = "{}: {}"
-        string = string.format(self.name, self.get_backlight_state())
+        state_str = self.get_state_str()
+        string = string.format(self.name, state_str)
         self.item.set_string(string)
 
-    def get_backlight_state(self) -> str:
+    def get_state_str(self) -> str:
         if self.get_state():
             return "ON"
         return "OFF"
@@ -52,7 +53,7 @@ class ToggleBase(OptionToggle):
     def get_string(self) -> str:
         return self.item.get_formatted()
 
-    def get_state(self):
+    def get_state(self) -> bool:
         return self.state_callback()
 
     def execute_callback(self):
@@ -81,7 +82,7 @@ class RangeBase(OptionRange):
         self.change_state = False
         self.update_menu_item()
 
-    def get_state_string(self):
+    def get_state_str(self) -> str:
         if self.change_state:
             string = "<{}>"
             string = string.format(self.get_value())
@@ -92,7 +93,8 @@ class RangeBase(OptionRange):
 
     def update_menu_item(self):
         string = "{}: {}"
-        string = string.format(self.name, self.get_state_string())
+        state_str = self.get_state_str()
+        string = string.format(self.name, state_str)
         self.item.set_string(string)
 
     def update(self):
@@ -176,7 +178,7 @@ class TimeBase(OptionTimeHM):
         string = string.format(hours, minutes)
         return string
 
-    def get_state_string(self) -> str:
+    def get_state_str(self) -> str:
         if self.select_state and not self.change_state:
             string = self.get_time_select()
             return string
@@ -194,7 +196,8 @@ class TimeBase(OptionTimeHM):
 
     def update_menu_item(self):
         string = "{}: {}"
-        string = string.format(self.name, self.get_state_string())
+        state_str = self.get_state_str()
+        string = string.format(self.name, state_str)
         self.item.set_string(string)
 
     def update(self):

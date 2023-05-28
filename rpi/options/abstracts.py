@@ -13,6 +13,10 @@ class Option(ABC):
         pass
 
     @abstractmethod
+    def update_roll(self):
+        pass
+
+    @abstractmethod
     def get_string(self) -> str:
         pass
 
@@ -57,4 +61,3 @@ class OptionRange(Option):
 
     def decrement(self):
         pass
-

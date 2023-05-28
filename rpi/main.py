@@ -124,6 +124,7 @@ class LCDMenu(LCDMenuBase):
             option = options_list[idx]
             option_name = option.get_string()
             option.update()
+            option.update_roll()
             string += option_name
         return string
 

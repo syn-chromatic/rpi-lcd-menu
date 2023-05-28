@@ -102,7 +102,7 @@ class LCDWriterBase:
         self._lcd.blink_cursor_off()
 
     def _write(self, string: str, hold_time: float):
-        self._lcd.blink_cursor_off()
+        self._lcd.hide_cursor()
         segments = self._seg_string(string)
         for segment in segments:
             self._put_str(segment)

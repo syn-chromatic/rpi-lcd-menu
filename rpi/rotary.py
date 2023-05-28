@@ -47,12 +47,11 @@ class RotaryEncoder:
             return -1
 
     def is_pressed(self) -> bool:
+        self.swp_state = self.sw_state
         state = self.get_sw_state()
-        bool_state = False
-        if self.swp_state == 0 and state == 1:
-            bool_state = True
-        self.swp_state = state
-        return bool_state
+        if state == 1 and self.swp_state == 0:
+            return True
+        return False
 
     def __del__(self):
         gp.gpiochip_close(self.handle)

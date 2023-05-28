@@ -298,7 +298,7 @@ class TimeTest(OptionTimeHM):
             return string
 
         string = "{}:{}"
-        string = string.format(self.hours, self.minutes)
+        string = string.format(self.get_hours(), self.get_minutes())
         return string
 
     def update_menu_item(self):

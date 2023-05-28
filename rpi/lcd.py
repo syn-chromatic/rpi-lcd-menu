@@ -70,6 +70,8 @@ class LCDWriterBase:
         for char, idx, row in changes:
             self._lcd.move_to(idx, row)
             self._lcd.putstr(char)
+
+        self._lcd.move_to(len(string), self._cur_row)
         row_fill = self._get_row_fill(string)
         self._lcd.putstr(row_fill)
         self._lcd.move_to(len(string), self._cur_row)

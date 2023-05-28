@@ -19,7 +19,7 @@ class Option1(Option):
     def update(self):
         pass
 
-    def update_roll(self):
+    def update_shift(self):
         self.item.increment_shift_item()
 
     def get_string(self) -> str:
@@ -38,7 +38,7 @@ class Option2(Option):
     def update(self):
         pass
 
-    def update_roll(self):
+    def update_shift(self):
         self.item.increment_shift_item()
 
     def get_string(self) -> str:
@@ -58,7 +58,7 @@ class Option3(Option):
     def update(self):
         pass
 
-    def update_roll(self):
+    def update_shift(self):
         self.item.increment_shift_item()
 
     def get_string(self) -> str:
@@ -77,7 +77,7 @@ class Option4(Option):
     def update(self):
         pass
 
-    def update_roll(self):
+    def update_shift(self):
         self.item.increment_shift_item()
 
     def get_string(self) -> str:
@@ -96,7 +96,7 @@ class Option5(Option):
     def update(self):
         pass
 
-    def update_roll(self):
+    def update_shift(self):
         self.item.increment_shift_item()
 
     def get_string(self) -> str:
@@ -115,7 +115,7 @@ class Option6(Option):
     def update(self):
         pass
 
-    def update_roll(self):
+    def update_shift(self):
         self.item.increment_shift_item()
 
     def get_string(self) -> str:
@@ -134,7 +134,7 @@ class SystemInfo(Option):
     def update(self):
         pass
 
-    def update_roll(self):
+    def update_shift(self):
         self.item.increment_shift_item()
 
     def get_string(self) -> str:
@@ -153,7 +153,7 @@ class DisplayConfig(Option):
     def update(self):
         pass
 
-    def update_roll(self):
+    def update_shift(self):
         self.item.increment_shift_item()
 
     def get_string(self) -> str:
@@ -180,7 +180,7 @@ class BacklightToggle(OptionToggle):
     def update(self):
         self.update_menu_item()
 
-    def update_roll(self):
+    def update_shift(self):
         self.item.increment_shift_item()
 
     def get_string(self) -> str:
@@ -230,7 +230,7 @@ class TickRate(OptionRange):
     def update(self):
         self.update_menu_item()
 
-    def update_roll(self):
+    def update_shift(self):
         self.item.increment_shift_item()
 
     def get_string(self) -> str:
@@ -268,7 +268,7 @@ class CPUName(Option):
     def update(self):
         self.update_menu_item()
 
-    def update_roll(self):
+    def update_shift(self):
         self.item.increment_shift_item()
 
     def get_string(self) -> str:
@@ -293,7 +293,7 @@ class CPUPerc(Option):
     def update(self):
         self.update_menu_item()
 
-    def update_roll(self):
+    def update_shift(self):
         self.item.increment_shift_item()
 
     def get_string(self) -> str:
@@ -319,7 +319,7 @@ class CPUFreq(Option):
     def update(self):
         self.update_menu_item()
 
-    def update_roll(self):
+    def update_shift(self):
         self.item.increment_shift_item()
 
     def get_string(self) -> str:

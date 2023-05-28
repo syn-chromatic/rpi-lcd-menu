@@ -13,7 +13,7 @@ class Option(ABC):
         pass
 
     @abstractmethod
-    def update_roll(self):
+    def update_shift(self):
         pass
 
     @abstractmethod

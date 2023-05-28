@@ -124,7 +124,7 @@ class LCDMenu(LCDMenuBase):
             option = options_list[idx]
             option_name = option.get_string()
             option.update()
-            option.update_roll()
+            option.update_shift()
             string += option_name
         return string
 
@@ -303,10 +303,9 @@ class MenuHandler:
                 print("Back Button Pressed")
                 self.back_option()
 
-            if counter == self.tick_rate:
+            if counter >= self.tick_rate:
                 self.update_options()
                 counter = 0
-
             time.sleep(0.01)
 
 

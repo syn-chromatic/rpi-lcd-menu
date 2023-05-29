@@ -10,7 +10,7 @@ class RotaryEncoder:
         self.handle = gp.gpiochip_open(0)
         self.a_state = 0
         self.b_state = 0
-        self.sw_state = 0
+        self.sw_state = 1
         self.ap_state = 1
         self.bp_state = 1
         self.swp_state = 1

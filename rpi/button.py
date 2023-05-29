@@ -6,7 +6,7 @@ class Button:
     def __init__(self, bcm_pin: int):
         self.bcm_pin = bcm_pin
         self.handle = self.register_pin()
-        self.state = 0
+        self.state = 1
         self.p_state = 1
 
     def register_pin(self):

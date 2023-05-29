@@ -112,6 +112,12 @@ class LCDMenu(LCDMenuBase):
                 continue
             option.item.is_selected = False
 
+    def ensure_complete_string(self, string: str, string_lines: int):
+        if string_lines < self._rows:
+            for _ in range(self._rows - string_lines):
+                string += " " * self._chars + "\n"
+        return string
+
     def get_string(self) -> str:
         st_range, en_range = self._get_option_range()
         options_list = self._get_options_list()
@@ -128,10 +134,8 @@ class LCDMenu(LCDMenuBase):
                 option.update_shift()
                 string += option_name
                 string_lines += 1
-        if string_lines == 1:
-            string += " " * self._chars
-        print(string)
-        print("\n")
+
+        string = self.ensure_complete_string(string, string_lines)
         return string
 
     def apply_selection(self):

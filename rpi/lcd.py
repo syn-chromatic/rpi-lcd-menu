@@ -80,7 +80,6 @@ class LCDWriterBase:
         self._increment_row()
 
     def _seg_string(self, string: str) -> list[str]:
-        string = string.strip()
         lines = string.split("\n")
         segments = []
         for line in lines:
@@ -88,11 +87,11 @@ class LCDWriterBase:
             segment = ""
             for word in words:
                 if len(segment) + len(word) > 20:
-                    segments.append(segment.strip())
+                    segments.append(segment)
                     segment = word + " "
                 else:
                     segment += word + " "
-            segments.append(segment.strip())
+            segments.append(segment)
         return segments
 
     def _write_with_cursor(self, string: str, hold_time: float):

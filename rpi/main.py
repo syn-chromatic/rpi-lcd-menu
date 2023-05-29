@@ -1,5 +1,7 @@
 import time
 
+from typing import Optional
+
 from lcd import LCDWriter
 from button import Button
 
@@ -58,6 +60,10 @@ class LCDMenuBase:
             entry_idx, _ = self._entries.pop(-1)
             self._selected = entry_idx
 
+    def _get_option(self, options_list: list[Option], idx: int) -> Optional[Option]:
+        if len(options_list) > idx:
+            return options_list[idx]
+
 
 class LCDMenu(LCDMenuBase):
     def __init__(self, rows: int, chars: int, options: dict[Option, dict]):
@@ -97,7 +103,10 @@ class LCDMenu(LCDMenuBase):
         self, options_list: list[Option], st_range: int, en_range: int
     ):
         for idx in range(st_range, en_range):
-            option = options_list[idx]
+            option = self._get_option(options_list, idx)
+            if not option:
+                continue
+
             if idx == self._selected:
                 option.item.is_selected = True
                 continue
@@ -110,11 +119,12 @@ class LCDMenu(LCDMenuBase):
 
         string = ""
         for idx in range(st_range, en_range):
-            option = options_list[idx]
-            option_name = option.get_string()
-            option.update()
-            option.update_shift()
-            string += option_name
+            option = self._get_option(options_list, idx)
+            if option:
+                option_name = option.get_string()
+                option.update()
+                option.update_shift()
+                string += option_name
         return string
 
     def apply_selection(self):
@@ -214,6 +224,8 @@ class MenuHandler:
         option_4 = StaticBase("Option 4", MenuItem(LCD_CHARS))
         option_5 = StaticBase("Option 5", MenuItem(LCD_CHARS))
         rolling = StaticBase(rolling_text, MenuItem(LCD_CHARS))
+        option_test = StaticBase("Option Test", MenuItem(LCD_CHARS))
+        option_submenu = {option_test: {}}
 
         display_config = StaticBase("Display Config", MenuItem(LCD_CHARS))
         system_info = StaticBase("System Info", MenuItem(LCD_CHARS))
@@ -224,7 +236,7 @@ class MenuHandler:
             option_3: {},
             option_4: {},
             option_5: {},
-            rolling: {},
+            rolling: option_submenu,
             display_config: display_submenu,
             system_info: system_submenu,
         }

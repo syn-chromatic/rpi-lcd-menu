@@ -85,6 +85,7 @@ class LCDWriterBase:
         for char in string:
             if char == "\n" and line:
                 segments.append(line)
+                line = ""
                 continue
             line += char
         return segments

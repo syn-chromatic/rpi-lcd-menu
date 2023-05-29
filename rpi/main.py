@@ -27,16 +27,16 @@ class LCDMenuBase:
         self._options: dict[Option, dict] = options
         self._entries: list[tuple[int, Option]] = []
 
+    def _get_options(self) -> dict[Option, dict]:
+        options = self._options
+        for _, entry_option in self._entries:
+            if entry_option in options:
+                options = options[entry_option]
+        return options
+
     def _get_options_list(self) -> list[Option]:
-        if self._entries:
-            _, entry_option = self._entries[0]
-            option = self._options[entry_option]
-            for _, entry_option in self._entries:
-                option = self._options[entry_option]
-            entry_list = list(option.keys())
-            return entry_list
-        options_list = list(self._options.keys())
-        return options_list
+        options = self._get_options()
+        return list(options)
 
     def _get_option_range(self) -> tuple[int, int]:
         if self._selected < self._rows:
@@ -47,13 +47,6 @@ class LCDMenuBase:
         st_range = self._selected - (self._rows - 1)
         en_range = st_range + self._rows
         return st_range, en_range
-
-    def _get_options(self) -> dict[Option, dict]:
-        options = self._options
-        for _, entry_option in self._entries:
-            if entry_option in options:
-                options = options[entry_option]
-        return options
 
     def _add_entry(self, option: Option):
         options = self._get_options()

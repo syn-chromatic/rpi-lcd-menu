@@ -118,6 +118,7 @@ class LCDMenu(LCDMenuBase):
         self.update_selection(options_list, st_range, en_range)
 
         string = ""
+        string_lines = 0
         for idx in range(st_range, en_range):
             option = self._get_option(options_list, idx)
             if option:
@@ -125,6 +126,9 @@ class LCDMenu(LCDMenuBase):
                 option.update()
                 option.update_shift()
                 string += option_name
+                string_lines += 1
+        if string_lines == 1:
+            string += " " * self._chars
         return string
 
     def apply_selection(self):

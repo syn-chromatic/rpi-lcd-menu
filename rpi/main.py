@@ -48,9 +48,17 @@ class LCDMenuBase:
         en_range = st_range + self._rows
         return st_range, en_range
 
+    def _get_options(self) -> dict[Option, dict]:
+        options = self._options
+        for _, entry_option in self._entries:
+            if entry_option in options:
+                options = options[entry_option]
+        return options
+
     def _add_entry(self, option: Option):
-        if option in self._options:
-            if self._options[option]:
+        options = self._get_options()
+        if option in options:
+            if options[option]:
                 entry_idx = self._selected
                 self._entries.append((entry_idx, option))
                 self._selected = 0

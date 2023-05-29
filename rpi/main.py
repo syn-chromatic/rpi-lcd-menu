@@ -23,14 +23,15 @@ class LCDMenuBase:
         self._chars: int = chars
         self._selected: int = 0
         self._options: dict[Option, dict] = options
-        self._entries: list[Option] = []
+        self._entries: list[tuple[int, Option]] = []
 
     def _get_options_list(self) -> list[Option]:
         if self._entries:
-            options_entry = self._options[self._entries[0]]
-            for entry in self._entries:
-                options_entry = self._options[entry]
-            entry_list = list(options_entry.keys())
+            _, entry_option = self._entries[0]
+            option = self._options[entry_option]
+            for _, entry_option in self._entries:
+                option = self._options[entry_option]
+            entry_list = list(option.keys())
             return entry_list
         options_list = list(self._options.keys())
         return options_list
@@ -48,13 +49,14 @@ class LCDMenuBase:
     def _add_entry(self, option: Option):
         if option in self._options:
             if self._options[option]:
-                self._entries.append(option)
+                entry_idx = self._selected
+                self._entries.append((entry_idx, option))
                 self._selected = 0
 
     def _back_entry(self):
         if self._entries:
-            self._entries.pop(-1)
-            self._selected = 0
+            entry_idx, _ = self._entries.pop(-1)
+            self._selected = entry_idx
 
 
 class LCDMenu(LCDMenuBase):

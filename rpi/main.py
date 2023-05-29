@@ -223,6 +223,22 @@ class MenuHandler:
     def get_state_callback(self) -> bool:
         return self.screen._lcd.backlight
 
+    def get_test_submenus(self):
+        option_test1 = StaticBase("Option Test1", MenuItem(LCD_CHARS))
+        option_test2 = StaticBase("Option Test2", MenuItem(LCD_CHARS))
+        option_test3 = StaticBase("Option Test3", MenuItem(LCD_CHARS))
+        submenu_2 = {
+            option_test1: {},
+            option_test2: {},
+            option_test3: {},
+        }
+
+        option_test = StaticBase("Option Test", MenuItem(LCD_CHARS))
+        submenu_1 = {
+            option_test: submenu_2,
+        }
+        return submenu_1
+
     def get_main_menu(self) -> dict[Option, dict]:
         system_submenu = self.get_system_submenu()
         display_submenu = self.get_display_submenu()
@@ -235,8 +251,7 @@ class MenuHandler:
         option_4 = StaticBase("Option 4", MenuItem(LCD_CHARS))
         option_5 = StaticBase("Option 5", MenuItem(LCD_CHARS))
         rolling = StaticBase(rolling_text, MenuItem(LCD_CHARS))
-        option_test = StaticBase("Option Test", MenuItem(LCD_CHARS))
-        option_submenu = {option_test: {}}
+        test_submenus = self.get_test_submenus()
 
         display_config = StaticBase("Display Config", MenuItem(LCD_CHARS))
         system_info = StaticBase("System Info", MenuItem(LCD_CHARS))
@@ -247,7 +262,7 @@ class MenuHandler:
             option_3: {},
             option_4: {},
             option_5: {},
-            rolling: option_submenu,
+            rolling: test_submenus,
             display_config: display_submenu,
             system_info: system_submenu,
         }

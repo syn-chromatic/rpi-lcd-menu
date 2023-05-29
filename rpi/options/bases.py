@@ -154,28 +154,36 @@ class TimeBase(OptionTimeHM):
             return "0" + str(self.minutes)
         return str(self.minutes)
 
-    def get_time_select(self) -> str:
+    def get_time_str(self, segments: list[str]) -> str:
+        len_segments = len(segments) - 1
+        string = ""
+        for idx, seg in enumerate(segments):
+            string += seg
+
+            if idx != len_segments:
+                string += ":"
+        return string
+
+    def get_segments(self):
         hours = self.get_hours_str()
         minutes = self.get_minutes_str()
+        segments = [hours, minutes]
+        return segments
 
-        if self.selected == 0:
-            string = ".{}.:{}"
-            string = string.format(hours, minutes)
-            return string
-        string = "{}:.{}."
-        string = string.format(hours, minutes)
+    def get_time_select(self) -> str:
+        segments = self.get_segments()
+        for idx, seg in enumerate(segments):
+            if self.selected == idx:
+                segments[idx] = f"[{seg}]"
+        string = self.get_time_str(segments)
         return string
 
     def get_time_change(self) -> str:
-        hours = self.get_hours_str()
-        minutes = self.get_minutes_str()
-
-        if self.selected == 0:
-            string = "<{}>:{}"
-            string = string.format(hours, minutes)
-            return string
-        string = "{}:<{}>"
-        string = string.format(hours, minutes)
+        segments = self.get_segments()
+        for idx, seg in enumerate(segments):
+            if self.selected == idx:
+                segments[idx] = f"<{seg}>"
+        string = self.get_time_str(segments)
         return string
 
     def get_state_str(self) -> str:
@@ -187,11 +195,8 @@ class TimeBase(OptionTimeHM):
             string = self.get_time_change()
             return string
 
-        hours = self.get_hours_str()
-        minutes = self.get_minutes_str()
-
-        string = "{}:{}"
-        string = string.format(hours, minutes)
+        segments = self.get_segments()
+        string = self.get_time_str(segments)
         return string
 
     def update_menu_item(self):
@@ -228,8 +233,8 @@ class TimeBase(OptionTimeHM):
         self.selected = 0
 
     def increment_selected(self):
-        if self.selected == 0:
-            self.selected = 1
+        if self.selected < 1:
+            self.selected += 1
             return
         self.selected = 0
 

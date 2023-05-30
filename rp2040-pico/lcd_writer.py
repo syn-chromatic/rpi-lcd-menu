@@ -4,13 +4,13 @@ from time import sleep
 
 class LCDWriterBase:
     def __init__(self, rows: int, columns: int):
-        self._columns = columns
         self._rows = rows
+        self._columns = columns
         self._lcd = self._get_lcd()
         self._row_states: list[int] = [0] * rows
         self._row_data: list[list[str]] = [[]] * rows
 
-    def _get_lcd(self):
+    def _get_lcd(self) -> I2CLCD:
         lcd = I2CLCD(0, 0x27, self._rows, self._columns)
         return lcd
 
@@ -99,8 +99,8 @@ class LCDWriterBase:
 
 
 class LCDWriter(LCDWriterBase):
-    def __init__(self, rows: int, chars: int):
-        super().__init__(rows, chars)
+    def __init__(self, rows: int, columns: int):
+        super().__init__(rows, columns)
 
     def write_with_cursor(self, string: str, hold_time: float):
         self._write_with_cursor(string, hold_time)

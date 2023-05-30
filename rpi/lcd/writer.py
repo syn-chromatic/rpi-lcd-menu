@@ -3,113 +3,104 @@ from time import sleep
 
 
 class LCDWriterBase:
-    def __init__(self, rows: int, chars: int):
-        self._chars = chars
+    def __init__(self, rows: int, columns: int):
+        self._columns = columns
         self._rows = rows
-        self._cur_row = 0
-        self._row_states = [0] * rows
         self._lcd = self._get_lcd()
-        self._row_data = []
+        self._row_states: list[int] = [0] * rows
+        self._row_data: list[list[str]] = [[]] * rows
 
     def _get_lcd(self) -> I2CLCD:
-        lcd = I2CLCD(1, 0x27, self._rows, self._chars)
+        lcd = I2CLCD(1, 0x27, self._rows, self._columns)
         return lcd
 
-    def _increment_row(self):
-        if self._cur_row < self._rows - 1:
-            self._cur_row += 1
-            return
-        self._cur_row = 0
+    def _set_row_state(self, chars: list[str], row: int):
+        self._row_states[row] = len(chars)
 
-    def _set_row_state(self, string: str):
-        self._row_states[self._cur_row] = len(string)
-
-    def _get_row_fill(self, string: str) -> str:
-        row_state = self._row_states[self._cur_row]
-        fill = row_state - len(string)
+    def _fill_chars(self, chars: list[str], row: int):
+        row_state = self._row_states[row]
+        fill = row_state - len(chars)
         if fill > 0:
-            char_fill = " " * fill
-            return char_fill
-        return ""
+            for _ in range(fill):
+                chars.append(" ")
 
-    def _insert_row_data(self, string: str):
-        if len(self._row_data) - 1 < self._cur_row:
-            self._row_data.insert(self._cur_row, string)
-            return
-        self._row_data[self._cur_row] = string
+    def _insert_row_data(self, chars: list[str], row: int):
+        self._row_data[row] = chars
 
     def _get_string_changes(
-        self, string: str, row_data: str
-    ) -> list[tuple[str, int, int]]:
+        self, chars: list[str], prev_chars: list[str]
+    ) -> list[tuple[str, int]]:
         changes = []
-        max_idx = len(row_data) - 1
-        for idx in range(len(string)):
-            char1 = string[idx]
+        max_idx = len(prev_chars) - 1
+        for idx in range(len(chars)):
+            char1 = chars[idx]
             if idx <= max_idx:
-                char2 = row_data[idx]
+                char2 = prev_chars[idx]
                 if char1 != char2:
-                    changes.append((char1, idx, self._cur_row))
+                    changes.append((char1, idx))
                 continue
-            changes.append((char1, idx, self._cur_row))
+            changes.append((char1, idx))
         return changes
 
-    def _put_str(self, string: str):
-        if len(self._row_data) - 1 < self._cur_row:
-            self._lcd.move_to(0, self._cur_row)
-            self._insert_row_data(string)
-            row_fill = self._get_row_fill(string)
-            self._lcd.putstr(string)
-            self._lcd.putstr(row_fill)
-            self._lcd.move_to(len(string), self._cur_row)
-            self._set_row_state(string)
-            self._increment_row()
-            return
+    def _write_row(self, chars: list[str], row: int):
+        len_chars = len(chars)
+        prev_chars = self._row_data[row]
+        self._fill_chars(chars, row)
+        changes = self._get_string_changes(chars, prev_chars)
 
-        row_data = self._row_data[self._cur_row]
-        changes = self._get_string_changes(string, row_data)
+        for char, column in changes:
+            self._validate_column(column)
+            self._lcd.move_to(column, row)
+            self._lcd.putchar(char)
 
-        for char, idx, row in changes:
-            self._lcd.move_to(idx, row)
-            self._lcd.putstr(char)
+        self._lcd.move_to(len_chars, row)
+        self._insert_row_data(chars, row)
+        self._set_row_state(chars, row)
 
-        self._lcd.move_to(len(string), self._cur_row)
-        row_fill = self._get_row_fill(string)
-        self._lcd.putstr(row_fill)
-        self._lcd.move_to(len(string), self._cur_row)
-        self._insert_row_data(string)
-        self._set_row_state(string)
-        self._increment_row()
-
-    def _seg_string(self, string: str) -> list[str]:
+    def _seg_string(self, string: str) -> list[list[str]]:
         segments = []
-        line = ""
+        line = []
         for char in string:
             if char == "\n" and line:
                 segments.append(line)
-                line = ""
+                line = []
                 continue
-            line += char
+            line.append(char)
         return segments
+
+    def _validate_segments(self, segments: list[list[str]]):
+        if self._rows > len(segments):
+            error = "Data passed to LCDWriter exceeds LCD Rows:\n{}"
+            error = error.format(segments)
+            raise Exception(error)
+
+    def _validate_column(self, idx: int):
+        if idx >= self._columns:
+            error = "Data passed to LCDWriter exceeds LCD Columns:\n{}"
+            error = error.format(idx)
+            raise Exception(error)
 
     def _write_with_cursor(self, string: str, hold_time: float):
         self._lcd.blink_cursor_on()
         segments = self._seg_string(string)
-        for segment in segments:
-            self._put_str(segment)
+        self._validate_segments(segments)
+        for idx, segment in enumerate(segments):
+            self._write_row(segment, idx)
         sleep(hold_time)
         self._lcd.blink_cursor_off()
 
     def _write(self, string: str, hold_time: float):
         self._lcd.hide_cursor()
         segments = self._seg_string(string)
-        for segment in segments:
-            self._put_str(segment)
+        self._validate_segments(segments)
+        for idx, segment in enumerate(segments):
+            self._write_row(segment, idx)
         sleep(hold_time)
 
 
 class LCDWriter(LCDWriterBase):
-    def __init__(self, rows: int, chars: int):
-        super().__init__(rows, chars)
+    def __init__(self, rows: int, columns: int):
+        super().__init__(rows, columns)
 
     def write_with_cursor(self, string: str, hold_time: float):
         self._write_with_cursor(string, hold_time)

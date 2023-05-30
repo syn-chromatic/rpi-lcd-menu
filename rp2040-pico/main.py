@@ -20,9 +20,9 @@ LCD_CHARS = 16
 
 
 class LCDMenuBase:
-    def __init__(self, rows: int, chars: int, options: OrdDict[Option, OrdDict]):
+    def __init__(self, rows: int, columns: int, options: OrdDict[Option, OrdDict]):
         self._rows: int = rows
-        self._chars: int = chars
+        self._columns: int = columns
         self._selected: int = 0
         self._options: OrdDict[Option, OrdDict] = options
         self._entries: list[tuple[int, Option]] = []
@@ -68,8 +68,8 @@ class LCDMenuBase:
 
 
 class LCDMenu(LCDMenuBase):
-    def __init__(self, rows: int, chars: int, options: OrdDict[Option, OrdDict]):
-        super().__init__(rows, chars, options)
+    def __init__(self, rows: int, columns: int, options: OrdDict[Option, OrdDict]):
+        super().__init__(rows, columns, options)
 
     def increment_selection(self):
         options_list = self._get_options_list()
@@ -117,7 +117,7 @@ class LCDMenu(LCDMenuBase):
     def ensure_complete_string(self, string: str, string_lines: int):
         if string_lines < self._rows:
             for _ in range(self._rows - string_lines):
-                string += " " * self._chars + "\n"
+                string += " " * self._columns + "\n"
         return string
 
     def get_string(self) -> str:

@@ -20,9 +20,9 @@ LCD_CHARS = 16
 
 
 class LCDMenuBase:
-    def __init__(self, rows: int, chars: int, options: dict[Option, dict]):
+    def __init__(self, rows: int, columns: int, options: dict[Option, dict]):
         self._rows: int = rows
-        self._chars: int = chars
+        self._columns: int = columns
         self._selected: int = 0
         self._options: dict[Option, dict] = options
         self._entries: list[tuple[int, Option]] = []
@@ -117,7 +117,7 @@ class LCDMenu(LCDMenuBase):
     def ensure_complete_string(self, string: str, string_lines: int):
         if string_lines < self._rows:
             for _ in range(self._rows - string_lines):
-                string += " " * self._chars + "\n"
+                string += " " * self._columns + "\n"
         return string
 
     def get_string(self) -> str:
@@ -321,36 +321,29 @@ class MenuHandler:
     def loop(self):
         string = self.lcd_menu.get_string()
         self.screen.write(string, 0.0)
-        input_test = ""
         counter = 0
 
         while True:
             counter += 1
 
-            if self.up_button.is_pressed() or input_test == "3":
-                input_test = ""
+            if self.up_button.is_pressed():
                 print("Up Button Pressed")
                 self.increment_option()
 
-            if self.down_button.is_pressed() or input_test == "2":
-                input_test = ""
+            if self.down_button.is_pressed():
                 print("Down Button Pressed")
                 self.decrement_option()
 
-            if self.apply_button.is_pressed() or input_test == "4":
-                input_test = ""
+            if self.apply_button.is_pressed():
                 print("Apply Button Pressed")
                 self.apply_option()
 
-            if self.back_button.is_pressed() or input_test == "1":
-                input_test = ""
+            if self.back_button.is_pressed():
                 print("Back Button Pressed")
                 self.back_option()
 
             if counter >= self.tick_rate:
                 self.update_options()
-                input_test = input("Input:")
-                input_test = input_test.strip()
                 counter = 0
 
             time.sleep(0.01)

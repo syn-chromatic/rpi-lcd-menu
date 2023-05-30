@@ -46,13 +46,9 @@ class LCDAPI:
     LCD_RW_WRITE = 0
     LCD_RW_READ = 1
 
-    def __init__(self, num_lines, num_columns):
-        self.num_lines = num_lines
-        if self.num_lines > 4:
-            self.num_lines = 4
-        self.num_columns = num_columns
-        if self.num_columns > 40:
-            self.num_columns = 40
+    def __init__(self, rows: int, columns: int):
+        self.rows = rows
+        self.columns = columns
         self.cursor_x = 0
         self.cursor_y = 0
         self.implied_newline = False
@@ -134,29 +130,33 @@ class LCDAPI:
         if cursor_y & 1:
             addr += 0x40  # Lines 1 & 3 add 0x40
         if cursor_y & 2:  # Lines 2 & 3 add number of columns
-            addr += self.num_columns
+            addr += self.columns
         self.hal_write_command(self.LCD_DDRAM | addr)
+
+    def _handle_new_line(self):
+        if self.implied_newline:
+            self.implied_newline = False
+            return
+        self.cursor_x = self.columns
 
     def putchar(self, char):
         """Writes the indicated character to the LCD at the current cursor
         position, and advances the cursor by one position.
         """
         if char == "\n":
-            if self.implied_newline:
-                # self.implied_newline means we advanced due to a wraparound,
-                # so if we get a newline right after that we ignore it.
-                self.implied_newline = False
-            else:
-                self.cursor_x = self.num_columns
+            self._handle_new_line()
         else:
             self.hal_write_data(ord(char))
             self.cursor_x += 1
-        if self.cursor_x >= self.num_columns:
+
+        if self.cursor_x >= self.columns:
             self.cursor_x = 0
             self.cursor_y += 1
             self.implied_newline = char != "\n"
-        if self.cursor_y >= self.num_lines:
+
+        if self.cursor_y >= self.rows:
             self.cursor_y = 0
+
         self.move_to(self.cursor_x, self.cursor_y)
 
     def putstr(self, string):
@@ -208,10 +208,11 @@ class LCDAPI:
         """
         raise NotImplementedError
 
-    # This is a default implementation of hal_sleep_us which is suitable
-    # for most micropython implementations. For platforms which don't
-    # support `time.sleep_us()` they should provide their own implementation
-    # of hal_sleep_us in their hal layer and it will be used instead.
-    def hal_sleep_us(self, usecs: int):
+    @staticmethod
+    def hal_sleep_us(microseconds: int):
         """Sleep for some time (given in microseconds)."""
-        time.sleep(usecs / 1_000_000)
+        time.sleep(microseconds / 1_000_000)
+
+    @staticmethod
+    def hal_sleep_ms(milliseconds: int):
+        time.sleep(milliseconds / 1_000)

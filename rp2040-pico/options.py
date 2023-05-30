@@ -2,8 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Callable
 
 class MenuItemBase:
-    def __init__(self, chars: int, shift_hold: int, string: str = ""):
-        self._chars = chars
+    def __init__(self, columns: int, shift_hold: int, string: str = ""):
+        self._columns = columns
         self._string = string
         self._st_range = 0
         self._shift_hold = shift_hold
@@ -14,18 +14,18 @@ class MenuItemBase:
         len_string = len(self._string)
         return len_string - self._st_range
 
-    def _get_max_trim_chars(self) -> int:
-        return self._chars - 4
+    def _get_max_trim_columns(self) -> int:
+        return self._columns - 4
 
-    def _get_max_chars(self) -> int:
-        return self._chars - 2
+    def _get_max_columns(self) -> int:
+        return self._columns - 2
 
     def _get_shift_condition(self) -> bool:
         diff_length = self._get_diff_length()
-        max_trim_chars = self._get_max_trim_chars()
-        max_chars = self._get_max_chars()
-        if len(self._string) > max_chars:
-            if diff_length > max_trim_chars and self._is_selected:
+        max_trim_cols = self._get_max_trim_columns()
+        max_cols = self._get_max_columns()
+        if len(self._string) > max_cols:
+            if diff_length > max_trim_cols and self._is_selected:
                 return True
         return False
 
@@ -37,11 +37,11 @@ class MenuItemBase:
 
     def _get_raw_string(self) -> str:
         diff_length = self._get_diff_length()
-        max_trim_chars = self._get_max_trim_chars()
-        max_chars = self._get_max_chars()
-        if len(self._string) > max_chars:
-            if diff_length >= max_trim_chars:
-                en_range = self._st_range + (self._chars - 4)
+        max_trim_cols = self._get_max_trim_columns()
+        max_cols = self._get_max_columns()
+        if len(self._string) > max_cols:
+            if diff_length >= max_trim_cols:
+                en_range = self._st_range + (self._columns - 4)
                 new_string = self._string[self._st_range : en_range]
                 new_string += ".."
                 return new_string

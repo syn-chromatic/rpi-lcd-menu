@@ -1,4 +1,5 @@
-import lgpio as gp
+from gpio import GPIO
+
 from typing import Optional, Literal
 
 
@@ -7,7 +8,7 @@ class RotaryEncoder:
         self.a_pin = a_pin
         self.b_pin = b_pin
         self.sw_pin = sw_pin
-        self.handle = gp.gpiochip_open(0)
+        self.gpio = self.register_inputs()
         self.a_state = 0
         self.b_state = 0
         self.sw_state = 1
@@ -15,21 +16,23 @@ class RotaryEncoder:
         self.bp_state = 1
         self.swp_state = 1
 
-    def set_inputs(self):
-        gp.gpio_claim_input(self.handle, self.a_pin, 32)
-        gp.gpio_claim_input(self.handle, self.b_pin, 32)
-        gp.gpio_claim_input(self.handle, self.sw_pin, 32)
+    def register_inputs(self):
+        gpio = GPIO()
+        gpio.claim_input(self.a_pin, 32)
+        gpio.claim_input(self.b_pin, 32)
+        gpio.claim_input(self.sw_pin, 32)
+        return gpio
 
     def get_a_state(self):
-        self.a_state = gp.gpio_read(self.handle, self.a_pin)
+        self.a_state = self.gpio.read(self.a_pin)
         return self.a_state
 
     def get_b_state(self):
-        self.b_state = gp.gpio_read(self.handle, self.b_pin)
+        self.b_state = self.gpio.read(self.b_pin)
         return self.b_state
 
     def get_sw_state(self):
-        self.sw_state = gp.gpio_read(self.handle, self.sw_pin)
+        self.sw_state = self.gpio.read(self.sw_pin)
         return self.sw_state
 
     def get_direction(self) -> Optional[Literal[1, -1]]:
@@ -52,6 +55,3 @@ class RotaryEncoder:
         if state == 1 and self.swp_state == 0:
             return True
         return False
-
-    def __del__(self):
-        gp.gpiochip_close(self.handle)

@@ -2,7 +2,7 @@ import time
 
 from typing import Optional
 
-from lcd import LCDWriter
+from lcd.writer import LCDWriter
 from button import Button
 
 from options.abstracts import Option, OptionToggle, OptionRange, OptionTimeHM
@@ -52,6 +52,7 @@ class LCDMenuBase:
         options = self._get_options()
         if option in options:
             if options[option]:
+                option.item.reset()
                 entry_idx = self._selected
                 self._entries.append((entry_idx, option))
                 self._selected = 0
@@ -109,9 +110,9 @@ class LCDMenu(LCDMenuBase):
                 continue
 
             if idx == self._selected:
-                option.item.is_selected = True
+                option.item.set_selected(True)
                 continue
-            option.item.is_selected = False
+            option.item.set_selected(False)
 
     def ensure_complete_string(self, string: str, string_lines: int):
         if string_lines < self._rows:
@@ -320,29 +321,38 @@ class MenuHandler:
     def loop(self):
         string = self.lcd_menu.get_string()
         self.screen.write(string, 0.0)
-
+        input_test = ""
         counter = 0
+
         while True:
             counter += 1
-            if self.up_button.is_pressed():
+
+            if self.up_button.is_pressed() or input_test == "3":
+                input_test = ""
                 print("Up Button Pressed")
                 self.increment_option()
 
-            if self.down_button.is_pressed():
+            if self.down_button.is_pressed() or input_test == "2":
+                input_test = ""
                 print("Down Button Pressed")
                 self.decrement_option()
 
-            if self.apply_button.is_pressed():
+            if self.apply_button.is_pressed() or input_test == "4":
+                input_test = ""
                 print("Apply Button Pressed")
                 self.apply_option()
 
-            if self.back_button.is_pressed():
+            if self.back_button.is_pressed() or input_test == "1":
+                input_test = ""
                 print("Back Button Pressed")
                 self.back_option()
 
             if counter >= self.tick_rate:
                 self.update_options()
+                input_test = input("Input:")
+                input_test = input_test.strip()
                 counter = 0
+
             time.sleep(0.01)
 
 

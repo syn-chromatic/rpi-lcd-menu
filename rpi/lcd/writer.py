@@ -1,4 +1,4 @@
-from i2c_lcd import I2cLcd
+from lcd.i2c import I2CLCD
 from time import sleep
 
 
@@ -11,8 +11,8 @@ class LCDWriterBase:
         self._lcd = self._get_lcd()
         self._row_data = []
 
-    def _get_lcd(self):
-        lcd = I2cLcd(1, 0x27, self._rows, self._chars)
+    def _get_lcd(self) -> I2CLCD:
+        lcd = I2CLCD(1, 0x27, self._rows, self._chars)
         return lcd
 
     def _increment_row(self):
@@ -64,6 +64,7 @@ class LCDWriterBase:
             self._set_row_state(string)
             self._increment_row()
             return
+
         row_data = self._row_data[self._cur_row]
         changes = self._get_string_changes(string, row_data)
 
@@ -107,8 +108,8 @@ class LCDWriterBase:
 
 
 class LCDWriter(LCDWriterBase):
-    def __init__(self, chars: int, rows: int):
-        super().__init__(chars, rows)
+    def __init__(self, rows: int, chars: int):
+        super().__init__(rows, chars)
 
     def write_with_cursor(self, string: str, hold_time: float):
         self._write_with_cursor(string, hold_time)

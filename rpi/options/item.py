@@ -1,46 +1,75 @@
-class MenuItem:
-    def __init__(self, chars: int, string: str = ""):
-        self.chars = chars
-        self.string = string
-        self.st_range = 0
-        self.is_selected = False
+class MenuItemBase:
+    def __init__(self, chars: int, shift_hold: int, string: str = ""):
+        self._chars = chars
+        self._string = string
+        self._st_range = 0
+        self._shift_hold = shift_hold
+        self._shift_hold_counter = 0
+        self._is_selected = False
 
-    def set_string(self, string: str):
-        self.string = string
+    def _get_diff_length(self) -> int:
+        len_string = len(self._string)
+        return len_string - self._st_range
 
-    def get_string(self) -> str:
-        diff_length = self.get_diff_length()
-        max_trim_chars = self.get_max_trim_chars()
-        max_chars = self.get_max_chars()
-        if len(self.string) > max_chars:
+    def _get_max_trim_chars(self) -> int:
+        return self._chars - 4
+
+    def _get_max_chars(self) -> int:
+        return self._chars - 2
+
+    def _get_shift_condition(self) -> bool:
+        diff_length = self._get_diff_length()
+        max_trim_chars = self._get_max_trim_chars()
+        max_chars = self._get_max_chars()
+        if len(self._string) > max_chars:
+            if diff_length > max_trim_chars and self._is_selected:
+                return True
+        return False
+
+    def _increment_shift(self):
+        if self._shift_hold_counter == self._shift_hold:
+            self._st_range += 1
+            return
+        self._shift_hold_counter += 1
+
+    def _get_raw_string(self) -> str:
+        diff_length = self._get_diff_length()
+        max_trim_chars = self._get_max_trim_chars()
+        max_chars = self._get_max_chars()
+        if len(self._string) > max_chars:
             if diff_length >= max_trim_chars:
-                en_range = self.st_range + (self.chars - 4)
-                new_string = self.string[self.st_range : en_range]
+                en_range = self._st_range + (self._chars - 4)
+                new_string = self._string[self._st_range : en_range]
                 new_string += ".."
                 return new_string
-        return self.string[self.st_range :]
+        return self._string[self._st_range :]
 
-    def get_diff_length(self) -> int:
-        len_string = len(self.string)
-        return len_string - self.st_range
 
-    def get_max_trim_chars(self) -> int:
-        return self.chars - 4
+class MenuItem(MenuItemBase):
+    def __init__(self, chars: int, shift_hold: int = 3):
+        super().__init__(chars, shift_hold)
 
-    def get_max_chars(self) -> int:
-        return self.chars - 2
+    def is_selected(self) -> bool:
+        return self._is_selected
 
-    def get_formatted(self) -> str:
-        if self.is_selected:
-            return "> " + self.get_string() + "\n"
-        return "x " + self.get_string() + "\n"
+    def set_selected(self, state: bool):
+        self._is_selected = state
 
-    def increment_shift_item(self):
-        diff_length = self.get_diff_length()
-        max_trim_chars = self.get_max_trim_chars()
-        max_chars = self.get_max_chars()
-        if len(self.string) > max_chars:
-            if diff_length > max_trim_chars and self.is_selected:
-                self.st_range += 1
-                return
-        self.st_range = 0
+    def set_string(self, string: str):
+        self._string = string
+
+    def get_string(self) -> str:
+        if self._is_selected:
+            return "> " + self._get_raw_string() + "\n"
+        return "  " + self._get_raw_string() + "\n"
+
+    def shift(self):
+        shift_condition = self._get_shift_condition()
+        if shift_condition:
+            self._increment_shift()
+            return
+        self.reset()
+
+    def reset(self):
+        self._st_range = 0
+        self._shift_hold_counter = 0

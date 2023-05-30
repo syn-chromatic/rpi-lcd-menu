@@ -24,10 +24,10 @@ class CPUName(Option):
         self.update_menu_item()
 
     def update_shift(self):
-        self.item.increment_shift_item()
+        self.item.shift()
 
     def get_string(self) -> str:
-        return self.item.get_formatted()
+        return self.item.get_string()
 
 
 class CPUPerc(Option):
@@ -49,10 +49,10 @@ class CPUPerc(Option):
         self.update_menu_item()
 
     def update_shift(self):
-        self.item.increment_shift_item()
+        self.item.shift()
 
     def get_string(self) -> str:
-        return self.item.get_formatted()
+        return self.item.get_string()
 
 
 class CPUFreq(Option):
@@ -75,7 +75,7 @@ class CPUFreq(Option):
         self.update_menu_item()
 
     def update_shift(self):
-        self.item.increment_shift_item()
+        self.item.shift()
 
     def get_string(self) -> str:
-        return self.item.get_formatted()
+        return self.item.get_string()

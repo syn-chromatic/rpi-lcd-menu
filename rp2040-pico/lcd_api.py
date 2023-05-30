@@ -1,7 +1,7 @@
 import time
 
 
-class LcdApi:
+class LCDAPI:
     """Implements the API for talking with HD44780 compatible character LCDs.
     This class only knows what commands to send to the LCD, and not how to get
     them to the LCD.
@@ -46,13 +46,9 @@ class LcdApi:
     LCD_RW_WRITE = 0
     LCD_RW_READ = 1
 
-    def __init__(self, num_lines, num_columns):
-        self.num_lines = num_lines
-        if self.num_lines > 4:
-            self.num_lines = 4
-        self.num_columns = num_columns
-        if self.num_columns > 40:
-            self.num_columns = 40
+    def __init__(self, rows: int, chars: int):
+        self.rows = rows
+        self.chars = chars
         self.cursor_x = 0
         self.cursor_y = 0
         self.implied_newline = False
@@ -134,29 +130,33 @@ class LcdApi:
         if cursor_y & 1:
             addr += 0x40  # Lines 1 & 3 add 0x40
         if cursor_y & 2:  # Lines 2 & 3 add number of columns
-            addr += self.num_columns
+            addr += self.chars
         self.hal_write_command(self.LCD_DDRAM | addr)
+
+    def _handle_new_line(self):
+        if self.implied_newline:
+            self.implied_newline = False
+            return
+        self.cursor_x = self.chars
 
     def putchar(self, char):
         """Writes the indicated character to the LCD at the current cursor
         position, and advances the cursor by one position.
         """
         if char == "\n":
-            if self.implied_newline:
-                # self.implied_newline means we advanced due to a wraparound,
-                # so if we get a newline right after that we ignore it.
-                self.implied_newline = False
-            else:
-                self.cursor_x = self.num_columns
+            self._handle_new_line()
         else:
             self.hal_write_data(ord(char))
             self.cursor_x += 1
-        if self.cursor_x >= self.num_columns:
+
+        if self.cursor_x >= self.chars:
             self.cursor_x = 0
             self.cursor_y += 1
             self.implied_newline = char != "\n"
-        if self.cursor_y >= self.num_lines:
+
+        if self.cursor_y >= self.rows:
             self.cursor_y = 0
+
         self.move_to(self.cursor_x, self.cursor_y)
 
     def putstr(self, string):

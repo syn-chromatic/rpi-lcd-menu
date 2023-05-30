@@ -1,7 +1,181 @@
+from abc import ABC, abstractmethod
 from typing import Callable
 
-from options.abstracts import Option, OptionToggle, OptionRange, OptionTimeHM
-from options.item import MenuItem
+class MenuItemBase:
+    def __init__(self, chars: int, shift_hold: int, string: str = ""):
+        self._chars = chars
+        self._string = string
+        self._st_range = 0
+        self._shift_hold = shift_hold
+        self._shift_hold_counter = 0
+        self._is_selected = False
+
+    def _get_diff_length(self) -> int:
+        len_string = len(self._string)
+        return len_string - self._st_range
+
+    def _get_max_trim_chars(self) -> int:
+        return self._chars - 4
+
+    def _get_max_chars(self) -> int:
+        return self._chars - 2
+
+    def _get_shift_condition(self) -> bool:
+        diff_length = self._get_diff_length()
+        max_trim_chars = self._get_max_trim_chars()
+        max_chars = self._get_max_chars()
+        if len(self._string) > max_chars:
+            if diff_length > max_trim_chars and self._is_selected:
+                return True
+        return False
+
+    def _increment_shift(self):
+        if self._shift_hold_counter == self._shift_hold:
+            self._st_range += 1
+            return
+        self._shift_hold_counter += 1
+
+    def _get_raw_string(self) -> str:
+        diff_length = self._get_diff_length()
+        max_trim_chars = self._get_max_trim_chars()
+        max_chars = self._get_max_chars()
+        if len(self._string) > max_chars:
+            if diff_length >= max_trim_chars:
+                en_range = self._st_range + (self._chars - 4)
+                new_string = self._string[self._st_range : en_range]
+                new_string += ".."
+                return new_string
+        return self._string[self._st_range :]
+
+
+class MenuItem(MenuItemBase):
+    def __init__(self, chars: int, shift_hold: int = 3):
+        super().__init__(chars, shift_hold)
+
+    def is_selected(self) -> bool:
+        return self._is_selected
+
+    def set_selected(self, state: bool):
+        self._is_selected = state
+
+    def set_string(self, string: str):
+        self._string = string
+
+    def get_string(self) -> str:
+        if self._is_selected:
+            return "> " + self._get_raw_string() + "\n"
+        return "  " + self._get_raw_string() + "\n"
+
+    def shift(self):
+        shift_condition = self._get_shift_condition()
+        if shift_condition:
+            self._increment_shift()
+            return
+        self.reset()
+
+    def reset(self):
+        self._st_range = 0
+        self._shift_hold_counter = 0
+
+
+class Option(ABC):
+    def __init__(self, item: MenuItem):
+        self.item: MenuItem = item
+
+    @abstractmethod
+    def update(self):
+        pass
+
+    @abstractmethod
+    def update_shift(self):
+        pass
+
+    @abstractmethod
+    def get_string(self) -> str:
+        pass
+
+
+class OptionToggle(Option):
+    def __init__(self, callback: Callable, state_callback: Callable):
+        self.callback: Callable = callback
+        self.state_callback: Callable = state_callback
+
+    @abstractmethod
+    def get_state(self) -> bool:
+        pass
+
+    @abstractmethod
+    def execute_callback(self):
+        pass
+
+
+class OptionRange(Option):
+    def __init__(
+        self,
+        min_range: int,
+        max_range: int,
+        step: int,
+        assign_callback: Callable,
+        state_callback: Callable,
+    ):
+        self.min_range: int = min_range
+        self.max_range: int = max_range
+        self.step: int = step
+        self.assign_callback: Callable = assign_callback
+        self.state_callback: Callable = state_callback
+        self.change_state: bool = False
+
+    @abstractmethod
+    def get_value(self) -> int:
+        pass
+
+    @abstractmethod
+    def get_hold_state(self) -> bool:
+        pass
+
+    @abstractmethod
+    def advance_state(self):
+        pass
+
+    @abstractmethod
+    def back_state(self):
+        pass
+
+    @abstractmethod
+    def increment(self):
+        pass
+
+    def decrement(self):
+        pass
+
+
+class OptionTimeHM(Option):
+    def __init__(self):
+        self.hours: int = 0
+        self.minutes: int = 0
+        self.selected: int = 0
+        self.select_state: bool = False
+        self.change_state: bool = False
+
+    @abstractmethod
+    def get_hold_state(self) -> bool:
+        pass
+
+    @abstractmethod
+    def advance_state(self):
+        pass
+
+    @abstractmethod
+    def back_state(self):
+        pass
+
+    @abstractmethod
+    def increment(self):
+        pass
+
+    def decrement(self):
+        pass
+
 
 
 class StaticBase(Option):
@@ -24,9 +198,7 @@ class StaticBase(Option):
 
 
 class ToggleBase(OptionToggle):
-    def __init__(
-        self, name: str, item: MenuItem, callback: Callable, state_callback: Callable
-    ):
+    def __init__(self, name: str, item: MenuItem, callback, state_callback):
         self.name = name
         self.item = item
         self.callback = callback
@@ -69,8 +241,8 @@ class RangeBase(OptionRange):
         min_range: int,
         max_range: int,
         step: int,
-        assign_callback: Callable,
-        state_callback: Callable,
+        assign_callback,
+        state_callback,
     ):
         self.name = name
         self.item = item
@@ -269,3 +441,79 @@ class TimeBase(OptionTimeHM):
             return
         if self.select_state and self.change_state:
             self.decrement_time()
+
+
+class CPUName(Option):
+    def __init__(self, item: MenuItem):
+        self.item = item
+        self.update_menu_item()
+
+    def update_menu_item(self):
+        string = "CPU: {}"
+        string = string.format(self.get_cpu_name())
+        self.item.set_string(string)
+
+    @staticmethod
+    def get_cpu_name() -> str:
+        cpu = "Test CPU"
+        return cpu
+
+    def update(self):
+        self.update_menu_item()
+
+    def update_shift(self):
+        self.item.shift()
+
+    def get_string(self) -> str:
+        return self.item.get_string()
+
+
+class CPUPerc(Option):
+    def __init__(self, item: MenuItem):
+        self.item = item
+        self.update_menu_item()
+
+    def update_menu_item(self):
+        string = "Perc: {}%"
+        string = string.format(self.get_cpu_perc())
+        self.item.set_string(string)
+
+    @staticmethod
+    def get_cpu_perc() -> float:
+        perc = 1.0
+        return perc
+
+    def update(self):
+        self.update_menu_item()
+
+    def update_shift(self):
+        self.item.shift()
+
+    def get_string(self) -> str:
+        return self.item.get_string()
+
+
+class CPUFreq(Option):
+    def __init__(self, item: MenuItem):
+        self.item = item
+        self.update_menu_item()
+
+    def update_menu_item(self):
+        string = "Freq: {}Mhz"
+        string = string.format(self.get_cpu_freq())
+        self.item.set_string(string)
+
+    @staticmethod
+    def get_cpu_freq() -> int:
+        freq = 1
+        freq = int(freq)
+        return freq
+
+    def update(self):
+        self.update_menu_item()
+
+    def update_shift(self):
+        self.item.shift()
+
+    def get_string(self) -> str:
+        return self.item.get_string()

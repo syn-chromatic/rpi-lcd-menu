@@ -1,5 +1,7 @@
+from collections import OrderedDict as OrdDict
 from abc import ABC, abstractmethod
 from typing import Callable
+
 
 class MenuItemBase:
     def __init__(self, columns: int, shift_hold: int, string: str = ""):
@@ -175,7 +177,6 @@ class OptionTimeHM(Option):
 
     def decrement(self):
         pass
-
 
 
 class StaticBase(Option):
@@ -517,3 +518,21 @@ class CPUFreq(Option):
 
     def get_string(self) -> str:
         return self.item.get_string()
+
+
+class MenuCreator:
+    def __init__(self, heads: list[Option], submenus: list[OrdDict[Option, OrdDict]]):
+        self.heads = heads
+        self.submenus = submenus
+
+    def create(self) -> OrdDict[Option, OrdDict]:
+        if len(self.heads) != len(self.submenus):
+            raise Exception()
+
+        menu = OrdDict()
+
+        for idx, head in enumerate(self.heads):
+            submenu = self.submenus[idx]
+            menu.update({head: submenu})
+
+        return menu

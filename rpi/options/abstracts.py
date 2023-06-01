@@ -20,6 +20,9 @@ class Option(ABC):
     def get_string(self) -> str:
         pass
 
+    def __repr__(self) -> str:
+        return self.item._string
+
 
 class OptionToggle(Option):
     def __init__(self, callback: Callable, state_callback: Callable):

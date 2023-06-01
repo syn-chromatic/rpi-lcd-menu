@@ -1,22 +1,20 @@
 import time
-
 from typing import Optional
 
 from lcd.writer import LCDWriter
-from button import Button
-
 from options.abstracts import Option, OptionToggle, OptionRange, OptionTimeHM
 from options.item import MenuItem
 from options.configurations import CPUName, CPUPerc, CPUFreq
 from options.bases import StaticBase, RangeBase, ToggleBase, TimeBase
+from options.utils import MenuCreator
+from controller import Controller, KBController
 
-
-UP_BUTTON_PIN = 5
-DOWN_BUTTON_PIN = 6
+PREV_BUTTON_PIN = 6
+NEXT_BUTTON_PIN = 5
 APPLY_BUTTON_PIN = 4
 BACK_BUTTON_PIN = 27
-LCD_ROWS = 2
-LCD_CHARS = 16
+LCD_ROWS = 4
+LCD_CHARS = 20
 
 
 class LCDMenuBase:
@@ -170,21 +168,35 @@ class MenuHandler:
         self.screen = self.get_screen()
         self.main_menu = self.get_main_menu()
         self.lcd_menu = self.get_lcd_menu()
-        self.up_button = self.get_up_button()
-        self.down_button = self.get_down_button()
-        self.apply_button = self.get_apply_button()
-        self.back_button = self.get_back_button()
+        self.controller = self.get_controller()
 
-    def get_system_submenu(self) -> dict[Option, dict]:
-        cpu_name = CPUName(MenuItem(LCD_CHARS))
-        cpu_perc = CPUPerc(MenuItem(LCD_CHARS))
-        cpu_freq = CPUFreq(MenuItem(LCD_CHARS))
-        system_submenu: dict[Option, dict] = {
-            cpu_name: {},
-            cpu_perc: {},
-            cpu_freq: {},
-        }
-        return system_submenu
+    def get_controller(self) -> Controller:
+        controller = Controller(
+            BACK_BUTTON_PIN,
+            PREV_BUTTON_PIN,
+            NEXT_BUTTON_PIN,
+            APPLY_BUTTON_PIN,
+        )
+
+        controller.register_back_callback(self.back_option)
+        controller.register_prev_callback(self.decrement_option)
+        controller.register_next_callback(self.increment_option)
+        controller.register_apply_callback(self.apply_option)
+        return controller
+
+    def get_kb_controller(self) -> KBController:
+        controller = KBController(
+            ord("1"),
+            ord("2"),
+            ord("3"),
+            ord("4"),
+        )
+
+        controller.register_back_callback(self.back_option)
+        controller.register_prev_callback(self.decrement_option)
+        controller.register_next_callback(self.increment_option)
+        controller.register_apply_callback(self.apply_option)
+        return controller
 
     def set_tick_rate(self, tick_rate: int):
         self.tick_rate = tick_rate
@@ -192,83 +204,109 @@ class MenuHandler:
     def get_tick_rate(self):
         return self.tick_rate
 
-    def get_display_submenu(self) -> dict[Option, dict]:
-        callback = self.backlight_callback
-        state_callback = self.get_state_callback
-        backlight_item = MenuItem(LCD_CHARS)
-
-        backlight_toggle = ToggleBase(
-            "Backlight", backlight_item, callback, state_callback
-        )
-
-        assign_callback = self.set_tick_rate
-        state_callback = self.get_tick_rate
-        tick_item = MenuItem(LCD_CHARS)
-
-        tick_rate = RangeBase(
-            "Tickrate", tick_item, 10, 90, 5, assign_callback, state_callback
-        )
-
-        time_item = MenuItem(LCD_CHARS)
-        time_option = TimeBase("Time", time_item)
-
-        display_submenu: dict[Option, dict] = {
-            backlight_toggle: {},
-            tick_rate: {},
-            time_option: {},
-        }
-        return display_submenu
-
     def backlight_callback(self, backlight_state: bool):
         self.screen.set_backlight(backlight_state)
 
     def get_state_callback(self) -> bool:
         return self.screen._lcd.backlight
 
-    def get_test_submenus(self):
+    def get_system_submenu(self) -> dict[Option, dict]:
+        cpu_name = CPUName(MenuItem(LCD_CHARS))
+        cpu_perc = CPUPerc(MenuItem(LCD_CHARS))
+        cpu_freq = CPUFreq(MenuItem(LCD_CHARS))
+
+        heads = [
+            cpu_name,
+            cpu_perc,
+            cpu_freq,
+        ]
+
+        submenus = [{}] * 3
+        menu = MenuCreator(heads, submenus).create()
+        return menu
+
+    def get_display_submenu(self) -> dict[Option, dict]:
+        backlight_toggle = ToggleBase(
+            "Backlight",
+            MenuItem(LCD_CHARS),
+            self.backlight_callback,
+            self.get_state_callback,
+        )
+        tick_rate = RangeBase(
+            "Tickrate",
+            MenuItem(LCD_CHARS),
+            10,
+            90,
+            5,
+            self.set_tick_rate,
+            self.get_tick_rate,
+        )
+
+        time_option = TimeBase("Time", MenuItem(LCD_CHARS))
+
+        heads: list[Option] = [
+            backlight_toggle,
+            tick_rate,
+            time_option,
+        ]
+
+        submenus: list[dict] = [{}] * 3
+
+        menu = MenuCreator(heads, submenus).create()
+        return menu
+
+    def get_test_submenus(self) -> dict[Option, dict]:
         option_test1 = StaticBase("Option Test1", MenuItem(LCD_CHARS))
         option_test2 = StaticBase("Option Test2", MenuItem(LCD_CHARS))
         option_test3 = StaticBase("Option Test3", MenuItem(LCD_CHARS))
-        submenu_2 = {
-            option_test1: {},
-            option_test2: {},
-            option_test3: {},
-        }
-
         option_test = StaticBase("Option Test", MenuItem(LCD_CHARS))
-        submenu_1 = {
-            option_test: submenu_2,
-        }
-        return submenu_1
+
+        heads_lvl2: list[Option] = [
+            option_test1,
+            option_test2,
+            option_test3,
+        ]
+        submenus_lvl2: list[dict] = [{}] * 3
+        heads_lvl1: list[Option] = [option_test]
+        submenus_lvl1: list[dict] = [MenuCreator(heads_lvl2, submenus_lvl2).create()]
+        menu = MenuCreator(heads_lvl1, submenus_lvl1).create()
+        return menu
 
     def get_main_menu(self) -> dict[Option, dict]:
-        system_submenu = self.get_system_submenu()
-        display_submenu = self.get_display_submenu()
-
-        rolling_text = "Testing rolling option"
-
         option_1 = StaticBase("Option 1", MenuItem(LCD_CHARS))
         option_2 = StaticBase("Option 2", MenuItem(LCD_CHARS))
         option_3 = StaticBase("Option 3", MenuItem(LCD_CHARS))
         option_4 = StaticBase("Option 4", MenuItem(LCD_CHARS))
         option_5 = StaticBase("Option 5", MenuItem(LCD_CHARS))
-        rolling = StaticBase(rolling_text, MenuItem(LCD_CHARS))
-        test_submenus = self.get_test_submenus()
+        rolling_test = StaticBase("Testing rolling option", MenuItem(LCD_CHARS))
 
         display_config = StaticBase("Display Config", MenuItem(LCD_CHARS))
         system_info = StaticBase("System Info", MenuItem(LCD_CHARS))
 
-        main_menu: dict[Option, dict] = {
-            option_1: {},
-            option_2: {},
-            option_3: {},
-            option_4: {},
-            option_5: {},
-            rolling: test_submenus,
-            display_config: display_submenu,
-            system_info: system_submenu,
-        }
-        return main_menu
+        heads: list[Option] = [
+            option_1,
+            option_2,
+            option_3,
+            option_4,
+            option_5,
+            rolling_test,
+            display_config,
+            system_info,
+        ]
+
+        submenus: list[dict] = [
+            {},
+            {},
+            {},
+            {},
+            {},
+            self.get_test_submenus(),
+            self.get_display_submenu(),
+            self.get_system_submenu(),
+        ]
+        menu = MenuCreator(heads, submenus).create()
+
+        return menu
 
     def get_screen(self) -> LCDWriter:
         screen = LCDWriter(LCD_ROWS, LCD_CHARS)
@@ -277,22 +315,6 @@ class MenuHandler:
     def get_lcd_menu(self) -> LCDMenu:
         lcd_menu = LCDMenu(LCD_ROWS, LCD_CHARS, self.main_menu)
         return lcd_menu
-
-    def get_up_button(self) -> Button:
-        up_button = Button(UP_BUTTON_PIN)
-        return up_button
-
-    def get_down_button(self) -> Button:
-        down_button = Button(DOWN_BUTTON_PIN)
-        return down_button
-
-    def get_apply_button(self) -> Button:
-        apply_button = Button(APPLY_BUTTON_PIN)
-        return apply_button
-
-    def get_back_button(self) -> Button:
-        back_button = Button(BACK_BUTTON_PIN)
-        return back_button
 
     def increment_option(self):
         self.lcd_menu.increment_selection()
@@ -325,23 +347,7 @@ class MenuHandler:
 
         while True:
             counter += 1
-
-            if self.up_button.is_pressed():
-                print("Up Button Pressed")
-                self.increment_option()
-
-            if self.down_button.is_pressed():
-                print("Down Button Pressed")
-                self.decrement_option()
-
-            if self.apply_button.is_pressed():
-                print("Apply Button Pressed")
-                self.apply_option()
-
-            if self.back_button.is_pressed():
-                print("Back Button Pressed")
-                self.back_option()
-
+            self.controller.check()
             if counter >= self.tick_rate:
                 self.update_options()
                 counter = 0

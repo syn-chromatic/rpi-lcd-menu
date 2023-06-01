@@ -3,9 +3,15 @@ from x_gpio import GPIOInput
 
 class Button:
     def __init__(self, bcm_pin: int):
-        self.gpio = GPIOInput(bcm_pin)
+        self.bcm_pin = bcm_pin
+        self.gpio = self.register_pin()
         self.state = 1
         self.p_state = 1
+
+    def register_pin(self) -> GPIOInput:
+        gpio = GPIOInput(self.bcm_pin)
+        gpio.set_pull_up()
+        return gpio
 
     def get_state(self) -> int:
         self.state = self.gpio.read()

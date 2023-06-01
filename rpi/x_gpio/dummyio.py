@@ -1,18 +1,18 @@
-class GPIO:
-    def __init__(self, chip: int = 0):
+class GPIOInput:
+    def __init__(self, pin: int):
         pass
 
-    def claim_input(self, pin: int, flag: int = 0):
+    def set_pull_up(self):
         pass
 
-    def read(self, pin: int) -> int:
+    def set_pull_down(self):
+        pass
+
+    def set_pull_off(self):
+        pass
+
+    def read(self) -> int:
         return 1
-
-    def close(self):
-        pass
-
-    def __del__(self):
-        self.close()
 
 
 class GPIOI2C:

@@ -1,4 +1,4 @@
-from x_gpio import GPIO
+from x_gpio import GPIOInput
 
 
 class Button:
@@ -8,13 +8,13 @@ class Button:
         self.state = 1
         self.p_state = 1
 
-    def register_pin(self) -> GPIO:
-        gpio = GPIO()
-        gpio.claim_input(self.bcm_pin, 32)
+    def register_pin(self) -> GPIOInput:
+        gpio = GPIOInput(self.bcm_pin)
+        gpio.set_pull_up()
         return gpio
 
     def get_state(self) -> int:
-        self.state = self.gpio.read(self.bcm_pin)
+        self.state = self.gpio.read()
         return self.state
 
     def is_pressed(self) -> bool:

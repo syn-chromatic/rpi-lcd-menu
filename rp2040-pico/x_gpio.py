@@ -3,17 +3,24 @@ from machine import Pin, I2C
 
 class GPIOInputBase:
     def __init__(self, pin: int):
-        self._handle = self._register_pin(pin)
-
-    def _register_pin(self, pin: int):
-        return Pin(pin, Pin.IN, Pin.PULL_UP)
+        self._pin = pin
+        self._handle = Pin(self._pin, Pin.IN)
 
 
 class GPIOInput(GPIOInputBase):
     def __init__(self, pin: int):
         super().__init__(pin)
 
-    def read(self):
+    def set_pull_up(self):
+        self._handle = Pin(self._pin, Pin.IN, Pin.PULL_UP)
+
+    def set_pull_down(self):
+        self._handle = Pin(self._pin, Pin.IN, Pin.PULL_DOWN)
+
+    def set_pull_off(self):
+        self._handle = Pin(self._pin, Pin.IN)
+
+    def read(self) -> int:
         return self._handle.value()
 
 

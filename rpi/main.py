@@ -8,6 +8,7 @@ from options.configurations import CPUName, CPUPerc, CPUFreq
 from options.bases import StaticBase, RangeBase, ToggleBase, TimeBase
 from options.utils import MenuCreator
 from controller import Controller, KBController
+from console import ConsoleWriter
 
 PREV_BUTTON_PIN = 6
 NEXT_BUTTON_PIN = 5
@@ -168,7 +169,7 @@ class MenuHandler:
         self.screen = self.get_screen()
         self.main_menu = self.get_main_menu()
         self.lcd_menu = self.get_lcd_menu()
-        self.controller = self.get_controller()
+        self.controller = self.get_kb_controller()
 
     def get_controller(self) -> Controller:
         controller = Controller(
@@ -338,6 +339,7 @@ class MenuHandler:
 
     def update_options(self):
         string = self.lcd_menu.get_string()
+        ConsoleWriter(LCD_ROWS).print(string)
         self.screen.write(string, 0.0)
 
     def loop(self):

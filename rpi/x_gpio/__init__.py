@@ -1,18 +1,19 @@
 try:
-    import lgpio
+    import pigpio
+    from .gpio import GPIOInput, GPIOI2C
 
-    if len(dir(lgpio)) <= 8:
-        raise ImportError()
+    if not pigpio.pi().connected:
+        raise Exception()
 
-    from .gpio import GPIO, GPIOI2C
+    __all__ = ["GPIOInput", "GPIOI2C"]
 
-    __all__ = ["GPIO", "GPIOI2C"]
-
-except ImportError:
+except Exception:
     import logging
-    from .dummyio import GPIO, GPIOI2C
+    from .dummyio import GPIOInput, GPIOI2C
 
-    error = "LGPIO library could not be loaded, fallback to Dummy GPIO for development."
+    error = (
+        "PiGPIO library could not be loaded, fallback to Dummy GPIO for development."
+    )
     logging.critical(error)
 
-    __all__ = ["GPIO", "GPIOI2C"]
+    __all__ = ["GPIOInput", "GPIOI2C"]

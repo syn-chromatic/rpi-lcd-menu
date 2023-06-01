@@ -1,5 +1,4 @@
-from gpio import GPIO
-
+from x_gpio import GPIOInput
 from typing import Optional, Literal
 
 
@@ -8,7 +7,9 @@ class RotaryEncoder:
         self.a_pin = a_pin
         self.b_pin = b_pin
         self.sw_pin = sw_pin
-        self.gpio = self.register_inputs()
+        self.a_gpio = self.register_pin(a_pin)
+        self.b_gpio = self.register_pin(b_pin)
+        self.sw_gpio = self.register_pin(sw_pin)
         self.a_state = 0
         self.b_state = 0
         self.sw_state = 1
@@ -16,23 +17,20 @@ class RotaryEncoder:
         self.bp_state = 1
         self.swp_state = 1
 
-    def register_inputs(self):
-        gpio = GPIO()
-        gpio.claim_input(self.a_pin, 32)
-        gpio.claim_input(self.b_pin, 32)
-        gpio.claim_input(self.sw_pin, 32)
+    def register_pin(self, pin: int) -> GPIOInput:
+        gpio = GPIOInput(pin)
         return gpio
 
     def get_a_state(self):
-        self.a_state = self.gpio.read(self.a_pin)
+        self.a_state = self.a_gpio.read()
         return self.a_state
 
     def get_b_state(self):
-        self.b_state = self.gpio.read(self.b_pin)
+        self.b_state = self.b_gpio.read()
         return self.b_state
 
     def get_sw_state(self):
-        self.sw_state = self.gpio.read(self.sw_pin)
+        self.sw_state = self.sw_gpio.read()
         return self.sw_state
 
     def get_direction(self) -> Optional[Literal[1, -1]]:

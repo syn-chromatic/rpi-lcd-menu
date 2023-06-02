@@ -3,8 +3,17 @@
 * `rp2040-pico` for the Raspbery Pi Pico 
 * `rpi` for the Raspberry Pi 1/2/3/4
 ___
+
+
 ## Installation for RPi
 Tested on Ubuntu 23.04 on a Raspberry Pi 4
+
+### Table of Contents
+1. [Installing Python Dependencies](#installing-python-dependencies)
+2. [Installing PiGPIO](#installing-pigpio)
+3. [Installing PiGPIO Daemon (PiGPIOd)](#installing-pigpio-daemon-pigpiod)
+
+___
 
 ### Installing Python Dependencies
 `pip install -r requirements.txt`

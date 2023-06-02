@@ -3,17 +3,17 @@ try:
     from .gpio import GPIOInput, GPIOI2C
 
     if not pigpio.pi().connected:
-        raise Exception()
+        raise Exception(
+            "PiGPIO library could not be loaded, "
+            "fallback to Dummy GPIO for development."
+        )
 
     __all__ = ["GPIOInput", "GPIOI2C"]
 
-except Exception:
+except Exception as error:
     import logging
     from .dummyio import GPIOInput, GPIOI2C
 
-    error = (
-        "PiGPIO library could not be loaded, fallback to Dummy GPIO for development."
-    )
     logging.critical(error)
 
     __all__ = ["GPIOInput", "GPIOI2C"]

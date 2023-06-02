@@ -12,7 +12,7 @@ SHIFT_DATA = 4  # P4-P7
 
 class I2CLCD(LCDAPI):
     def __init__(self, bus: int, address: int, rows: int, columns: int):
-        self.gpio = GPIOI2C(bus, address, 400000)
+        self.gpio = GPIOI2C(bus, address)
         self.gpio.write_device([0])
         self.hal_initialize_lcd()
         super().__init__(rows, columns)

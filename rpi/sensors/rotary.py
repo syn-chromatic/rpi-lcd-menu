@@ -2,35 +2,37 @@ from wgpio import GPIOInput
 from typing import Optional, Literal
 
 
-class RotaryEncoder:
+class RotaryEncoderBase:
     def __init__(self, a_pin: int, b_pin: int, sw_pin: int):
-        self.a_pin = a_pin
-        self.b_pin = b_pin
-        self.sw_pin = sw_pin
-        self.a_gpio = self.register_pin(a_pin)
-        self.b_gpio = self.register_pin(b_pin)
-        self.sw_gpio = self.register_pin(sw_pin)
-        self.a_state = 0
-        self.b_state = 0
-        self.sw_state = 1
-        self.ap_state = 1
-        self.bp_state = 1
-        self.swp_state = 1
+        self._a_gpio = self._register_pin(a_pin)
+        self._b_gpio = self._register_pin(b_pin)
+        self._sw_gpio = self._register_pin(sw_pin)
+        self._a_state = 0
+        self._b_state = 0
+        self._sw_state = 1
+        self._ap_state = 1
+        self._bp_state = 1
+        self._swp_state = 1
 
-    def register_pin(self, pin: int) -> GPIOInput:
+    def _register_pin(self, pin: int) -> GPIOInput:
         gpio = GPIOInput(pin)
         return gpio
 
+
+class RotaryEncoder(RotaryEncoderBase):
+    def __init__(self, a_pin: int, b_pin: int, sw_pin: int):
+        super().__init__(a_pin, b_pin, sw_pin)
+
     def get_a_state(self):
-        self.a_state = self.a_gpio.read()
+        self.a_state = self._a_gpio.read()
         return self.a_state
 
     def get_b_state(self):
-        self.b_state = self.b_gpio.read()
+        self.b_state = self._b_gpio.read()
         return self.b_state
 
     def get_sw_state(self):
-        self.sw_state = self.sw_gpio.read()
+        self.sw_state = self._sw_gpio.read()
         return self.sw_state
 
     def get_direction(self) -> Optional[Literal[1, -1]]:

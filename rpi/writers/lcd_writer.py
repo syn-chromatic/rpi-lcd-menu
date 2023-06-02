@@ -4,8 +4,8 @@ from time import sleep
 
 class LCDWriterBase:
     def __init__(self, rows: int, columns: int):
-        self._columns = columns
         self._rows = rows
+        self._columns = columns
         self._lcd = self._get_lcd()
         self._row_states: list[int] = [0] * rows
         self._row_data: list[list[str]] = [[]] * rows

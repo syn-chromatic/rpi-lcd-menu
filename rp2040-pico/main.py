@@ -1,12 +1,12 @@
 import time
 from collections import OrderedDict as OrdDict
 
-from lcd_writer import LCDWriter
 from options import Option, OptionToggle, OptionRange, OptionTimeHM
 from options import MenuItem
 from options import CPUName, CPUPerc, CPUFreq
 from options import StaticBase, RangeBase, ToggleBase, TimeBase
 from options import MenuCreator
+from lcd_writer import LCDWriter
 from controller import Controller
 
 PREV_BUTTON_PIN = 6
@@ -130,11 +130,10 @@ class LCDMenu(LCDMenuBase):
 
             if option:
                 option_name = option.get_string()
-                if option_name:
-                    option.update()
-                    option.update_shift()
-                    string += option_name
-                    string_lines += 1
+                option.update()
+                option.update_shift()
+                string += option_name
+                string_lines += 1
 
         string = self.ensure_complete_string(string, string_lines)
         return string
@@ -208,7 +207,7 @@ class MenuHandler:
             cpu_freq,
         ]
 
-        submenus: list[OrdDict] = [OrdDict()] * 3
+        submenus = [OrdDict()] * 3
         menu = MenuCreator(heads, submenus).create()
         return menu
 
@@ -219,7 +218,6 @@ class MenuHandler:
             self.backlight_callback,
             self.get_state_callback,
         )
-
         tick_rate = RangeBase(
             "Tickrate",
             MenuItem(LCD_CHARS),

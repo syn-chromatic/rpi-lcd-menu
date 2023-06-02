@@ -67,8 +67,8 @@ class LCDMenuBase:
 
 
 class LCDMenu(LCDMenuBase):
-    def __init__(self, rows: int, chars: int, options: dict[Option, dict]):
-        super().__init__(rows, chars, options)
+    def __init__(self, rows: int, columns: int, options: dict[Option, dict]):
+        super().__init__(rows, columns, options)
 
     def increment_selection(self):
         options_list = self._get_options_list()

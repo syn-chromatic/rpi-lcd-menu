@@ -2,9 +2,36 @@
 ## Information
 * `rp2040-pico` for the Raspbery Pi Pico 
 * `rpi` for the Raspberry Pi 1/2/3/4
+___
+## Installation for RPi
+Tested on Ubuntu 23.04 on a Raspberry Pi 4
 
-`rp2040-pico` is not on par with the other version, as I do not have a Pico to test with.
+### Installing Python Dependencies
+`pip install -r requirements.txt`
 
+### Installing PiGPIO
+This installs the pigpio library, but is not yet functional, as it requires a daemon to be running.
+
+`sudo apt install python3-pigpio`
+
+### Installing PiGPIO Daemon (PiGPIOd)
+```shell
+wget https://github.com/joan2937/pigpio/archive/master.zip
+unzip master.zip
+cd pigpio-master
+make
+sudo make install
+```
+
+Those instructions are taken from [here](https://abyz.me.uk/rpi/pigpio/download.html).
+
+Start the daemon by running this command.
+
+`sudo pigpiod`
+
+The daemon doesn't automatically start on a restart, so it needs to be called again in order to control the GPIO.
+
+___
 ## Parts
 * x1 I2C LCD (16x2 OR 20x4)
 * x4 1K Resistors

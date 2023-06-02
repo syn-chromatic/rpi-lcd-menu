@@ -2,9 +2,8 @@
 ## Information
 * `rp2040-pico` for the Raspbery Pi Pico 
 * `rpi` for the Raspberry Pi 1/2/3/4
+
 ___
-
-
 ## Installation for RPi
 Tested on Ubuntu 23.04 on a Raspberry Pi 4
 
@@ -46,7 +45,7 @@ ___
 * x4 1K Resistors
 * x4 Momentary Push Buttons
 
-
+___
 ## Breadboard Diagram for RPi
 ![rpi-lcd-menu_bb](https://github.com/syn-chromatic/rpi-lcd-menu/assets/68112904/6937a6d6-2d49-41e1-a1cf-360e7b928617)
 

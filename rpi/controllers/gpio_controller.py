@@ -1,4 +1,4 @@
-from button import Button
+from actuators.button import Button
 from typing import Callable
 
 

@@ -16,12 +16,12 @@ Tested on Ubuntu 23.04 on a Raspberry Pi 4
 ___
 
 ### Installing Python Dependencies
-`pip install -r requirements.txt`
+* `pip install -r requirements.txt`
 
 ### Installing PiGPIO
 This installs the pigpio library, but is not yet functional, as it requires a daemon to be running.
 
-`sudo apt install python3-pigpio`
+* `sudo apt install python3-pigpio`
 
 ### Installing PiGPIO Daemon (PiGPIOd)
 ```shell
@@ -34,11 +34,11 @@ sudo make install
 
 Those instructions are taken from [here](https://abyz.me.uk/rpi/pigpio/download.html).
 
-Start the daemon by running this command.
+To start the daemon, run the following command:
 
-`sudo pigpiod`
+* `sudo pigpiod`
 
-The daemon doesn't automatically start on a restart, so it needs to be called again in order to control the GPIO.
+The daemon doesn't automatically start on boot.
 
 ___
 ## Parts

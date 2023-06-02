@@ -7,15 +7,15 @@ from options.item import MenuItem
 from options.configurations import CPUName, CPUPerc, CPUFreq
 from options.bases import StaticBase, RangeBase, ToggleBase, TimeBase
 from options.utils import MenuCreator
-from controller import Controller, KBController
+from controllers.controller import Controller
 from console import ConsoleWriter
 
 PREV_BUTTON_PIN = 6
 NEXT_BUTTON_PIN = 5
 APPLY_BUTTON_PIN = 4
 BACK_BUTTON_PIN = 27
-LCD_ROWS = 4
-LCD_CHARS = 20
+LCD_ROWS = 2
+LCD_CHARS = 16
 
 
 class LCDMenuBase:
@@ -169,7 +169,7 @@ class MenuHandler:
         self.screen = self.get_screen()
         self.main_menu = self.get_main_menu()
         self.lcd_menu = self.get_lcd_menu()
-        self.controller = self.get_kb_controller()
+        self.controller = self.get_controller()
 
     def get_controller(self) -> Controller:
         controller = Controller(
@@ -177,20 +177,6 @@ class MenuHandler:
             PREV_BUTTON_PIN,
             NEXT_BUTTON_PIN,
             APPLY_BUTTON_PIN,
-        )
-
-        controller.register_back_callback(self.back_option)
-        controller.register_prev_callback(self.decrement_option)
-        controller.register_next_callback(self.increment_option)
-        controller.register_apply_callback(self.apply_option)
-        return controller
-
-    def get_kb_controller(self) -> KBController:
-        controller = KBController(
-            ord("1"),
-            ord("2"),
-            ord("3"),
-            ord("4"),
         )
 
         controller.register_back_callback(self.back_option)

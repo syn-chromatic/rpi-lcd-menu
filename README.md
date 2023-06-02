@@ -13,7 +13,7 @@ Tested on Ubuntu 23.04 on a Raspberry Pi 4
 3. [Installing PiGPIO Daemon (PiGPIOd)](#installing-pigpio-daemon-pigpiod)
 
 ___
-### `⮩` Installing Python Dependencies
+### `⤷` Installing Python Dependencies
 * `pip install -r requirements.txt`
 
 ### `⮩` Installing PiGPIO

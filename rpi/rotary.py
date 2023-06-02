@@ -1,4 +1,4 @@
-from x_gpio import GPIOInput
+from wgpio import GPIOInput
 from typing import Optional, Literal
 
 

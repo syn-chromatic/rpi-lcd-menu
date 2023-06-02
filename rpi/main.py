@@ -1,14 +1,14 @@
 import time
 from typing import Optional
 
-from lcd.writer import LCDWriter
 from options.abstracts import Option, OptionToggle, OptionRange, OptionTimeHM
 from options.item import MenuItem
 from options.configurations import CPUName, CPUPerc, CPUFreq
 from options.bases import StaticBase, RangeBase, ToggleBase, TimeBase
 from options.utils import MenuCreator
-from controllers.controller import Controller
-from console import ConsoleWriter
+from writers.lcd_writer import LCDWriter
+from controllers.gpio_controller import Controller
+
 
 PREV_BUTTON_PIN = 6
 NEXT_BUTTON_PIN = 5
@@ -325,7 +325,6 @@ class MenuHandler:
 
     def update_options(self):
         string = self.lcd_menu.get_string()
-        ConsoleWriter(LCD_ROWS).print(string)
         self.screen.write(string, 0.0)
 
     def loop(self):

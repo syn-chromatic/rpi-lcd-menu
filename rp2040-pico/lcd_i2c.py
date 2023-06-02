@@ -1,5 +1,5 @@
 from lcd_api import LCDAPI
-from x_gpio import GPIOI2C
+from wgpio import GPIOI2C
 
 # PCF8574 pin definitions
 MASK_RS = 0x01  # P0

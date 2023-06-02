@@ -4,34 +4,17 @@ from typing import Callable
 
 class ControllerBase:
     def __init__(self, back_pin: int, prev_pin: int, next_pin: int, apply_pin: int):
-        self._back_pin = back_pin
-        self._prev_pin = prev_pin
-        self._next_pin = next_pin
-        self._apply_pin = apply_pin
-        self._back_button = self._register_back_button()
-        self._prev_button = self._register_prev_button()
-        self._next_button = self._register_next_button()
-        self._apply_button = self._register_apply_button()
+        self._back_button = self._register_button(back_pin)
+        self._prev_button = self._register_button(prev_pin)
+        self._next_button = self._register_button(next_pin)
+        self._apply_button = self._register_button(apply_pin)
         self._back_callback = None
         self._prev_callback = None
         self._next_callback = None
         self._apply_callback = None
 
-    def _register_back_button(self) -> Button:
-        button = Button(self._back_pin)
-        return button
-
-    def _register_prev_button(self) -> Button:
-        button = Button(self._prev_pin)
-        return button
-
-    def _register_next_button(self) -> Button:
-        button = Button(self._next_pin)
-        return button
-
-    def _register_apply_button(self) -> Button:
-        button = Button(self._apply_pin)
-        return button
+    def _register_button(self, pin: int) -> Button:
+        return Button(pin)
 
     def _execute_back_callback(self):
         if self._back_callback:

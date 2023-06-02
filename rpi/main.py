@@ -267,7 +267,7 @@ class MenuHandler:
         option_5 = StaticBase("Option 5", MenuItem(LCD_CHARS))
         rolling_test = StaticBase("Testing rolling option", MenuItem(LCD_CHARS))
 
-        display_config = StaticBase("Display Config", MenuItem(LCD_CHARS))
+        config = StaticBase("Configuration", MenuItem(LCD_CHARS))
         system_info = StaticBase("System Info", MenuItem(LCD_CHARS))
 
         heads: list[Option] = [
@@ -277,7 +277,7 @@ class MenuHandler:
             option_4,
             option_5,
             rolling_test,
-            display_config,
+            config,
             system_info,
         ]
 

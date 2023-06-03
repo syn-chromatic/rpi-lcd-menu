@@ -9,6 +9,7 @@ from options import MenuCreator
 from lcd_writer import LCDWriter
 from controller import Controller
 
+
 PREV_BUTTON_PIN = 6
 NEXT_BUTTON_PIN = 5
 APPLY_BUTTON_PIN = 4

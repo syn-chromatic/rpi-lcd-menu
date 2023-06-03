@@ -4,7 +4,8 @@ class MenuItemBase:
         self._string = string
         self._st_range = 0
         self._shift_hold = shift_hold
-        self._shift_hold_counter = 0
+        self._shift_hold_st = 0
+        self._shift_hold_en = 0
         self._is_selected = False
 
     def _get_diff_length(self) -> int:
@@ -27,10 +28,25 @@ class MenuItemBase:
         return False
 
     def _increment_shift(self):
-        if self._shift_hold_counter == self._shift_hold:
-            self._st_range += 1
+        shift_condition = self._get_shift_condition()
+        if shift_condition:
+            if not self._hold_shift_start():
+                self._st_range += 1
             return
-        self._shift_hold_counter += 1
+        if not self._hold_shift_end():
+            self._reset()
+
+    def _hold_shift_start(self):
+        if self._shift_hold_st < self._shift_hold:
+            self._shift_hold_st += 1
+            return True
+        return False
+
+    def _hold_shift_end(self):
+        if self._shift_hold_en < self._shift_hold:
+            self._shift_hold_en += 1
+            return True
+        return False
 
     def _get_raw_string(self) -> str:
         diff_length = self._get_diff_length()
@@ -43,6 +59,11 @@ class MenuItemBase:
                 new_string += ".."
                 return new_string
         return self._string[self._st_range :]
+
+    def _reset(self):
+        self._st_range = 0
+        self._shift_hold_st = 0
+        self._shift_hold_en = 0
 
 
 class MenuItem(MenuItemBase):
@@ -64,12 +85,7 @@ class MenuItem(MenuItemBase):
         return "  " + self._get_raw_string() + "\n"
 
     def shift(self):
-        shift_condition = self._get_shift_condition()
-        if shift_condition:
-            self._increment_shift()
-            return
-        self.reset()
+        self._increment_shift()
 
     def reset(self):
-        self._st_range = 0
-        self._shift_hold_counter = 0
+        self._reset()

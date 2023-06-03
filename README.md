@@ -1,11 +1,11 @@
 # RPi LCD Menu
 
 ## `➢` Table of Contents
-1. [Information](#information)
-2. [Installation for RPi](#installation-for-rpi)
-3. [Parts](#parts)
-4. [Breadboard Diagram for RPi](#breadboard-diagram-for-rpi)
-5. [Previews](#previews)
+1. [Information](#-information)
+2. [Installation for RPi](#-installation-for-rpi)
+3. [Parts](#-parts)
+4. [Breadboard Diagram for RPi](#-breadboard-diagram-for-rpi)
+5. [Previews](#-previews)
 
 ___
 ## `➢` Information

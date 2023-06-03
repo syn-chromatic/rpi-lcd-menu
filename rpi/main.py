@@ -3,7 +3,7 @@ from typing import Optional
 
 from options.abstracts import Option, OptionToggle, OptionRange, OptionTimeHM
 from options.item import MenuItem
-from options.configurations import CPUArch, CPUPerc, CPUFreq
+from options.configurations import CPUArch, CPUPerc, CPUFreq, CPUCoreCount
 from options.configurations import MemoryTotal, MemoryUsed, MemoryFree, MemoryPerc
 from options.bases import StaticBase, RangeBase, ToggleBase, TimeBase
 from options.utils import MenuCreator
@@ -206,6 +206,7 @@ class MenuHandler:
         cpu_arch = CPUArch(MenuItem(LCD_CHARS))
         cpu_perc = CPUPerc(MenuItem(LCD_CHARS))
         cpu_freq = CPUFreq(MenuItem(LCD_CHARS))
+        cpu_cores = CPUCoreCount(MenuItem(LCD_CHARS))
         mem_total = MemoryTotal(MenuItem(LCD_CHARS))
         mem_free = MemoryFree(MenuItem(LCD_CHARS))
         mem_used = MemoryUsed(MenuItem(LCD_CHARS))
@@ -215,13 +216,14 @@ class MenuHandler:
             cpu_arch,
             cpu_perc,
             cpu_freq,
+            cpu_cores,
             mem_total,
             mem_free,
             mem_used,
             mem_perc,
         ]
 
-        submenus = [{}] * 7
+        submenus = [{}] * len(heads)
         menu = MenuCreator(heads, submenus).create()
         return menu
 

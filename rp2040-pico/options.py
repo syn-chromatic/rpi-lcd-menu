@@ -7,8 +7,8 @@ class MenuItemBase:
     def __init__(self, columns: int, shift_hold: int, string: str = ""):
         self._columns = columns
         self._string = string
-        self._st_range = 0
         self._shift_hold = shift_hold
+        self._st_range = 0
         self._shift_hold_st = 0
         self._shift_hold_en = 0
         self._is_selected = False
@@ -32,13 +32,25 @@ class MenuItemBase:
                 return True
         return False
 
+    def _get_reset_condition(self):
+        if not self._is_selected and self._st_range != 0:
+            return True
+        return False
+
     def _increment_shift(self):
         shift_condition = self._get_shift_condition()
+
         if shift_condition:
             if not self._hold_shift_start():
                 self._st_range += 1
             return
-        if not self._hold_shift_end():
+
+        if not shift_condition and self._is_selected:
+            if not self._hold_shift_end():
+                self._reset()
+            return
+
+        if self._get_reset_condition():
             self._reset()
 
     def _hold_shift_start(self):

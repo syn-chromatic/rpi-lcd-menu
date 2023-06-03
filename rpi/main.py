@@ -58,7 +58,7 @@ class LCDMenuBase:
 
     def _back_entry(self):
         if self._entries:
-            entry_idx, entry_option = self._entries.pop(-1)
+            entry_idx, _ = self._entries.pop(-1)
             self._selected = entry_idx
 
     def _get_option(self, options_list: list[Option], idx: int) -> Optional[Option]:

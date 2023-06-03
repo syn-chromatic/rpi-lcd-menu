@@ -9,10 +9,7 @@ from options.bases import StaticBase, RangeBase, ToggleBase, TimeBase
 from options.utils import MenuCreator
 
 from writers.lcd_writer import LCDWriter
-from writers.console_writer import ConsoleWriter
-
 from controllers.gpio_controller import Controller
-from controllers.kb_controller import KBController
 
 
 PREV_BUTTON_PIN = 6
@@ -177,7 +174,7 @@ class MenuHandler:
         self.screen = self.get_screen()
         self.main_menu = self.get_main_menu()
         self.lcd_menu = self.get_lcd_menu()
-        self.controller = self.get_kb_controller()
+        self.controller = self.get_controller()
 
     def get_controller(self) -> Controller:
         controller = Controller(
@@ -185,20 +182,6 @@ class MenuHandler:
             PREV_BUTTON_PIN,
             NEXT_BUTTON_PIN,
             APPLY_BUTTON_PIN,
-        )
-
-        controller.register_back_callback(self.back_option)
-        controller.register_prev_callback(self.decrement_option)
-        controller.register_next_callback(self.increment_option)
-        controller.register_apply_callback(self.apply_option)
-        return controller
-
-    def get_kb_controller(self) -> KBController:
-        controller = KBController(
-            ord("1"),
-            ord("2"),
-            ord("3"),
-            ord("4"),
         )
 
         controller.register_back_callback(self.back_option)
@@ -355,7 +338,6 @@ class MenuHandler:
 
     def update_options(self):
         string = self.lcd_menu.get_string()
-        ConsoleWriter(LCD_ROWS).print(string)
         self.screen.write(string, 0.0)
 
     def loop(self):

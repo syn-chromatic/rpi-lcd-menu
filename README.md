@@ -53,8 +53,8 @@ ___
 
 ___
 ## `➢` Previews
-### `⤷` RPi Pico 
-[RPi Pico Simulation](https://wokwi.com/projects/366452940481298433) using Wokwi
+### `⤷` RP2040 Pico 
+[RP2040 Pico Simulation](https://wokwi.com/projects/366452940481298433) using Wokwi
 
 https://github.com/syn-chromatic/rpi-lcd-menu/assets/68112904/0871875d-3d89-42be-a493-d958d09ca745
 

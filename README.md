@@ -1,19 +1,22 @@
 # RPi LCD Menu
+
+## `➢` Table of Contents
+1. [Information](#-information)
+2. [Installation (RPi)](#-installation-rpi)
+3. [Parts](#-parts)
+4. [Breadboard Diagram (RPi)](#-breadboard-diagram-rpi)
+5. [Previews](#-previews)
+
+___
 ## `➢` Information
 * `rpi` for the Raspberry Pi 1/2/3/4
 * `rp2040-pico` for the Raspberry Pi Pico
 * `rp2040-simulation` for Wowki Pico Simulation
 
 ___
-## `➢` Installation for RPi
-Tested on Ubuntu 23.04 on a Raspberry Pi 4
+## `➢` Installation (RPi)
+Tested on Ubuntu 23.04 using a Raspberry Pi 4.
 
-### Table of Contents
-1. [Installing Python Dependencies](#installing-python-dependencies)
-2. [Installing PiGPIO](#installing-pigpio)
-3. [Installing PiGPIO Daemon (PiGPIOd)](#installing-pigpio-daemon-pigpiod)
-
-___
 ### `⤷` Installing Python Dependencies
 * `pip install -r requirements.txt`
 
@@ -46,7 +49,14 @@ ___
 * x4 Momentary Push Buttons
 
 ___
-## `➢` Breadboard Diagram for RPi
+## `➢` Breadboard Diagram (RPi)
 ![rpi-lcd-menu_bb](https://github.com/syn-chromatic/rpi-lcd-menu/assets/68112904/6937a6d6-2d49-41e1-a1cf-360e7b928617)
+
+___
+## `➢` Previews
+### `⤷` RP2040 Pico 
+[RP2040 Pico Simulation](https://wokwi.com/projects/366452940481298433) using Wokwi
+
+https://github.com/syn-chromatic/rpi-lcd-menu/assets/68112904/0871875d-3d89-42be-a493-d958d09ca745
 
 

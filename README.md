@@ -1,7 +1,8 @@
 # RPi LCD Menu
 ## `➢` Information
-* `rp2040-pico` for the Raspbery Pi Pico 
 * `rpi` for the Raspberry Pi 1/2/3/4
+* `rp2040-pico` for the Raspberry Pi Pico
+* `rp2040-simulation` for Wowki Pico Simulation
 
 ___
 ## `➢` Installation for RPi

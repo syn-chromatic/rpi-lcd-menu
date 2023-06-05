@@ -1,15 +1,13 @@
 import time
-from typing import Optional
+from collections import OrderedDict as OrdDict
 
-from options.abstracts import Option, OptionToggle, OptionRange, OptionTimeHM
-from options.item import MenuItem
-from options.configurations import CPUArch, CPUPerc, CPUFreq, CPUCoreCount
-from options.configurations import MemoryTotal, MemoryUsed, MemoryFree, MemoryPerc
-from options.bases import StaticBase, RangeBase, ToggleBase, TimeBase
-from options.utils import MenuCreator
-
-from writers.lcd_writer import LCDWriter
-from controllers.gpio_controller import Controller
+from options import Option, OptionToggle, OptionRange, OptionTimeHM
+from options import MenuItem
+from options import CPUName, CPUPerc, CPUFreq
+from options import StaticBase, RangeBase, ToggleBase, TimeBase
+from options import MenuCreator
+from lcd_writer import LCDWriter
+from controller import Controller
 
 
 PREV_BUTTON_PIN = 6
@@ -21,14 +19,14 @@ LCD_CHARS = 16
 
 
 class LCDMenuBase:
-    def __init__(self, rows: int, columns: int, options: dict[Option, dict]):
+    def __init__(self, rows: int, columns: int, options: OrdDict[Option, OrdDict]):
         self._rows: int = rows
         self._columns: int = columns
         self._selected: int = 0
-        self._options: dict[Option, dict] = options
+        self._options: OrdDict[Option, OrdDict] = options
         self._entries: list[tuple[int, Option]] = []
 
-    def _get_options(self) -> dict[Option, dict]:
+    def _get_options(self) -> OrdDict[Option, OrdDict]:
         options = self._options
         for _, entry_option in self._entries:
             if entry_option in options:
@@ -60,16 +58,16 @@ class LCDMenuBase:
 
     def _back_entry(self):
         if self._entries:
-            entry_idx, _ = self._entries.pop(-1)
+            entry_idx, entry_option = self._entries.pop(-1)
             self._selected = entry_idx
 
-    def _get_option(self, options_list: list[Option], idx: int) -> Optional[Option]:
+    def _get_option(self, options_list: list[Option], idx: int):
         if len(options_list) > idx:
             return options_list[idx]
 
 
 class LCDMenu(LCDMenuBase):
-    def __init__(self, rows: int, columns: int, options: dict[Option, dict]):
+    def __init__(self, rows: int, columns: int, options: OrdDict[Option, OrdDict]):
         super().__init__(rows, columns, options)
 
     def increment_selection(self):
@@ -202,32 +200,22 @@ class MenuHandler:
     def get_state_callback(self) -> bool:
         return self.screen._lcd.backlight
 
-    def get_system_submenu(self) -> dict[Option, dict]:
-        cpu_arch = CPUArch(MenuItem(LCD_CHARS))
+    def get_system_submenu(self) -> OrdDict[Option, OrdDict]:
+        cpu_name = CPUName(MenuItem(LCD_CHARS))
         cpu_perc = CPUPerc(MenuItem(LCD_CHARS))
         cpu_freq = CPUFreq(MenuItem(LCD_CHARS))
-        cpu_cores = CPUCoreCount(MenuItem(LCD_CHARS))
-        mem_total = MemoryTotal(MenuItem(LCD_CHARS))
-        mem_free = MemoryFree(MenuItem(LCD_CHARS))
-        mem_used = MemoryUsed(MenuItem(LCD_CHARS))
-        mem_perc = MemoryPerc(MenuItem(LCD_CHARS))
 
         heads = [
-            cpu_arch,
+            cpu_name,
             cpu_perc,
             cpu_freq,
-            cpu_cores,
-            mem_total,
-            mem_free,
-            mem_used,
-            mem_perc,
         ]
 
-        submenus = [{}] * len(heads)
+        submenus = [OrdDict()] * 3
         menu = MenuCreator(heads, submenus).create()
         return menu
 
-    def get_display_submenu(self) -> dict[Option, dict]:
+    def get_display_submenu(self) -> OrdDict[Option, OrdDict]:
         backlight_toggle = ToggleBase(
             "Backlight",
             MenuItem(LCD_CHARS),
@@ -252,12 +240,12 @@ class MenuHandler:
             time_option,
         ]
 
-        submenus: list[dict] = [{}] * 3
+        submenus: list[OrdDict] = [OrdDict()] * 3
 
         menu = MenuCreator(heads, submenus).create()
         return menu
 
-    def get_test_submenus(self) -> dict[Option, dict]:
+    def get_test_submenus(self) -> OrdDict[Option, OrdDict]:
         option_test1 = StaticBase("Option Test1", MenuItem(LCD_CHARS))
         option_test2 = StaticBase("Option Test2", MenuItem(LCD_CHARS))
         option_test3 = StaticBase("Option Test3", MenuItem(LCD_CHARS))
@@ -268,13 +256,13 @@ class MenuHandler:
             option_test2,
             option_test3,
         ]
-        submenus_lvl2: list[dict] = [{}] * 3
+        submenus_lvl2: list[OrdDict] = [OrdDict()] * 3
         heads_lvl1: list[Option] = [option_test]
-        submenus_lvl1: list[dict] = [MenuCreator(heads_lvl2, submenus_lvl2).create()]
+        submenus_lvl1: list[OrdDict] = [MenuCreator(heads_lvl2, submenus_lvl2).create()]
         menu = MenuCreator(heads_lvl1, submenus_lvl1).create()
         return menu
 
-    def get_main_menu(self) -> dict[Option, dict]:
+    def get_main_menu(self) -> OrdDict[Option, OrdDict]:
         option_1 = StaticBase("Option 1", MenuItem(LCD_CHARS))
         option_2 = StaticBase("Option 2", MenuItem(LCD_CHARS))
         option_3 = StaticBase("Option 3", MenuItem(LCD_CHARS))
@@ -296,12 +284,12 @@ class MenuHandler:
             system_info,
         ]
 
-        submenus: list[dict] = [
-            {},
-            {},
-            {},
-            {},
-            {},
+        submenus: list[OrdDict] = [
+            OrdDict(),
+            OrdDict(),
+            OrdDict(),
+            OrdDict(),
+            OrdDict(),
             self.get_test_submenus(),
             self.get_display_submenu(),
             self.get_system_submenu(),

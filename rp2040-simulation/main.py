@@ -1,9 +1,11 @@
+import gc
 import time
 from collections import OrderedDict as OrdDict
 
 from options import Option, OptionToggle, OptionRange, OptionTimeHM
 from options import MenuItem
-from options import CPUName, CPUPerc, CPUFreq
+from options import MachineName, CPUFreq, UsedMemory, FreeMemory
+from options import DHTTemperature, DHTHumidity
 from options import StaticBase, RangeBase, ToggleBase, TimeBase
 from options import MenuCreator
 from lcd_writer import LCDWriter
@@ -14,8 +16,8 @@ PREV_BUTTON_PIN = 6
 NEXT_BUTTON_PIN = 5
 APPLY_BUTTON_PIN = 4
 BACK_BUTTON_PIN = 27
-LCD_ROWS = 2
-LCD_CHARS = 16
+LCD_ROWS = 4
+LCD_CHARS = 20
 
 
 class LCDMenuBase:
@@ -168,7 +170,7 @@ class LCDMenu(LCDMenuBase):
 
 class MenuHandler:
     def __init__(self):
-        self.tick_rate = 80
+        self.tick_rate = 40
         self.screen = self.get_screen()
         self.main_menu = self.get_main_menu()
         self.lcd_menu = self.get_lcd_menu()
@@ -201,17 +203,19 @@ class MenuHandler:
         return self.screen._lcd.backlight
 
     def get_system_submenu(self) -> OrdDict[Option, OrdDict]:
-        cpu_name = CPUName(MenuItem(LCD_CHARS))
-        cpu_perc = CPUPerc(MenuItem(LCD_CHARS))
+        machine_name = MachineName(MenuItem(LCD_CHARS))
         cpu_freq = CPUFreq(MenuItem(LCD_CHARS))
+        used_mem = UsedMemory(MenuItem(LCD_CHARS))
+        free_mem = FreeMemory(MenuItem(LCD_CHARS))
 
         heads = [
-            cpu_name,
-            cpu_perc,
+            machine_name,
             cpu_freq,
+            used_mem,
+            free_mem,
         ]
 
-        submenus = [OrdDict()] * 3
+        submenus = [OrdDict()] * 4
         menu = MenuCreator(heads, submenus).create()
         return menu
 
@@ -245,57 +249,38 @@ class MenuHandler:
         menu = MenuCreator(heads, submenus).create()
         return menu
 
-    def get_test_submenus(self) -> OrdDict[Option, OrdDict]:
-        option_test1 = StaticBase("Option Test1", MenuItem(LCD_CHARS))
-        option_test2 = StaticBase("Option Test2", MenuItem(LCD_CHARS))
-        option_test3 = StaticBase("Option Test3", MenuItem(LCD_CHARS))
-        option_test = StaticBase("Option Test", MenuItem(LCD_CHARS))
+    def get_sensors_submenu(self) -> OrdDict[Option, OrdDict]:
+        dht_temp = DHTTemperature(MenuItem(LCD_CHARS))
+        dht_humidity = DHTHumidity(MenuItem(LCD_CHARS))
 
-        heads_lvl2: list[Option] = [
-            option_test1,
-            option_test2,
-            option_test3,
-        ]
-        submenus_lvl2: list[OrdDict] = [OrdDict()] * 3
-        heads_lvl1: list[Option] = [option_test]
+        dht = StaticBase("DHT22", MenuItem(LCD_CHARS))
+
+        heads_lvl2: list[Option] = [dht_temp, dht_humidity]
+        submenus_lvl2: list[OrdDict] = [OrdDict(), OrdDict()]
+
+        heads_lvl1: list[Option] = [dht]
         submenus_lvl1: list[OrdDict] = [MenuCreator(heads_lvl2, submenus_lvl2).create()]
+
         menu = MenuCreator(heads_lvl1, submenus_lvl1).create()
         return menu
 
     def get_main_menu(self) -> OrdDict[Option, OrdDict]:
-        option_1 = StaticBase("Option 1", MenuItem(LCD_CHARS))
-        option_2 = StaticBase("Option 2", MenuItem(LCD_CHARS))
-        option_3 = StaticBase("Option 3", MenuItem(LCD_CHARS))
-        option_4 = StaticBase("Option 4", MenuItem(LCD_CHARS))
-        option_5 = StaticBase("Option 5", MenuItem(LCD_CHARS))
-        rolling_test = StaticBase("Testing rolling option", MenuItem(LCD_CHARS))
-
+        sensors = StaticBase("Sensors", MenuItem(LCD_CHARS))
         config = StaticBase("Configuration", MenuItem(LCD_CHARS))
         system_info = StaticBase("System Info", MenuItem(LCD_CHARS))
 
         heads: list[Option] = [
-            option_1,
-            option_2,
-            option_3,
-            option_4,
-            option_5,
-            rolling_test,
+            sensors,
             config,
             system_info,
         ]
 
         submenus: list[OrdDict] = [
-            OrdDict(),
-            OrdDict(),
-            OrdDict(),
-            OrdDict(),
-            OrdDict(),
-            self.get_test_submenus(),
+            self.get_sensors_submenu(),
             self.get_display_submenu(),
             self.get_system_submenu(),
         ]
         menu = MenuCreator(heads, submenus).create()
-
         return menu
 
     def get_screen(self) -> LCDWriter:
@@ -334,17 +319,24 @@ class MenuHandler:
         string = self.lcd_menu.get_string()
         self.screen.write(string, 0.0)
         counter = 0
-
         while True:
             counter += 1
             self.controller.check()
             if counter >= self.tick_rate:
                 self.update_options()
                 counter = 0
+                gc.collect()
 
             time.sleep(0.01)
 
 
+def print_button_layout():
+    buttons = "|  Back  |  Prev  |  Next  |  Apply  |"
+    line = "-" * len(buttons)
+    print("Button Layout:", line, buttons, line, sep="\n")
+
+
 if __name__ == "__main__":
+    print_button_layout()
     menu_handler = MenuHandler()
     menu_handler.loop()

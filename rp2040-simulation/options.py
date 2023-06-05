@@ -1,6 +1,11 @@
-from collections import OrderedDict as OrdDict
+import gc
+import os
+import machine
 from abc import ABC, abstractmethod
 from typing import Callable
+from collections import OrderedDict as OrdDict
+
+from sensors import DHT22
 
 
 class MenuItemBase:
@@ -472,45 +477,20 @@ class TimeBase(OptionTimeHM):
             self.decrement_time()
 
 
-class CPUName(Option):
+class MachineName(Option):
     def __init__(self, item: MenuItem):
         self.item = item
         self.update_menu_item()
 
     def update_menu_item(self):
-        string = "CPU: {}"
-        string = string.format(self.get_cpu_name())
+        string = "Name: {}"
+        string = string.format(self.get_machine_name())
         self.item.set_string(string)
 
     @staticmethod
-    def get_cpu_name() -> str:
-        cpu = "Test CPU"
-        return cpu
-
-    def update(self):
-        self.update_menu_item()
-
-    def update_shift(self):
-        self.item.shift()
-
-    def get_string(self) -> str:
-        return self.item.get_string()
-
-
-class CPUPerc(Option):
-    def __init__(self, item: MenuItem):
-        self.item = item
-        self.update_menu_item()
-
-    def update_menu_item(self):
-        string = "Perc: {}%"
-        string = string.format(self.get_cpu_perc())
-        self.item.set_string(string)
-
-    @staticmethod
-    def get_cpu_perc() -> float:
-        perc = 1.0
-        return perc
+    def get_machine_name() -> str:
+        name = os.uname().machine
+        return name
 
     def update(self):
         self.update_menu_item()
@@ -534,9 +514,99 @@ class CPUFreq(Option):
 
     @staticmethod
     def get_cpu_freq() -> int:
-        freq = 1
+        freq = machine.freq() / 1e6
         freq = int(freq)
         return freq
+
+    def update(self):
+        self.update_menu_item()
+
+    def update_shift(self):
+        self.item.shift()
+
+    def get_string(self) -> str:
+        return self.item.get_string()
+
+
+class UsedMemory(Option):
+    def __init__(self, item: MenuItem):
+        self.item = item
+        self.update_menu_item()
+
+    def update_menu_item(self):
+        string = "Used Mem: {}KB"
+        used_mem = int(gc.mem_alloc() / 1024)
+        string = string.format(used_mem)
+        self.item.set_string(string)
+
+    def update(self):
+        self.update_menu_item()
+
+    def update_shift(self):
+        self.item.shift()
+
+    def get_string(self) -> str:
+        return self.item.get_string()
+
+
+class FreeMemory(Option):
+    def __init__(self, item: MenuItem):
+        self.item = item
+        self.update_menu_item()
+
+    def update_menu_item(self):
+        string = "Free Mem: {}KB"
+        used_mem = int(gc.mem_free() / 1024)
+        string = string.format(used_mem)
+        self.item.set_string(string)
+
+    def update(self):
+        self.update_menu_item()
+
+    def update_shift(self):
+        self.item.shift()
+
+    def get_string(self) -> str:
+        return self.item.get_string()
+
+
+class DHTTemperature(Option):
+    def __init__(self, item: MenuItem):
+        self.item = item
+        self.dht = DHT22(13)
+        self.update_menu_item()
+
+    def update_menu_item(self):
+        string = "Temp: {}C"
+        string = string.format(self.get_dht_temp())
+        self.item.set_string(string)
+
+    def get_dht_temp(self) -> str:
+        return self.dht.temperature()
+
+    def update(self):
+        self.update_menu_item()
+
+    def update_shift(self):
+        self.item.shift()
+
+    def get_string(self) -> str:
+        return self.item.get_string()
+
+
+class DHTHumidity(Option):
+    def __init__(self, item: MenuItem):
+        self.item = item
+        self.dht = DHT22(13)
+        self.update_menu_item()
+
+    def update_menu_item(self):
+        string = "Humidity: {}%"
+        string = string.format(self.get_dht_temp())
+        self.item.set_string(string)
+
+    def get_dht_temp(self) -> str:
+        return self.dht.humidity()
 
     def update(self):
         self.update_menu_item()

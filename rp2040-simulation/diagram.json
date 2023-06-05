@@ -11,13 +11,6 @@
       "attrs": { "env": "micropython-20230426-v1.20.0" }
     },
     {
-      "type": "wokwi-lcd1602",
-      "id": "lcd1",
-      "top": -244.36,
-      "left": 147.07,
-      "attrs": { "pins": "i2c" }
-    },
-    {
       "type": "wokwi-pushbutton",
       "id": "btn1",
       "top": 130.83,
@@ -27,22 +20,22 @@
     {
       "type": "wokwi-pushbutton",
       "id": "btn2",
-      "top": 132.45,
-      "left": 221.67,
+      "top": 130.67,
+      "left": 238.56,
       "attrs": { "color": "green", "key": "2" }
     },
     {
       "type": "wokwi-pushbutton",
       "id": "btn3",
-      "top": 133.26,
-      "left": 310.29,
+      "top": 130.75,
+      "left": 323.95,
       "attrs": { "color": "green", "key": "3" }
     },
     {
       "type": "wokwi-pushbutton",
       "id": "btn4",
-      "top": 132.44,
-      "left": 406.99,
+      "top": 130.1,
+      "left": 411.93,
       "attrs": { "color": "green", "key": "4" }
     },
     {
@@ -51,6 +44,13 @@
       "top": -79,
       "left": 127.73,
       "attrs": { "pins": "i2c" }
+    },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht1",
+      "top": -155.94,
+      "left": -112.77,
+      "attrs": { "temperature": "60.2", "humidity": "28.5" }
     }
   ],
   "connections": [
@@ -65,7 +65,10 @@
     [ "lcd2:SCL", "pico:GP1", "green", [ "h-153.27", "v40.85" ] ],
     [ "lcd2:SDA", "pico:GP0", "green", [ "v0.26", "h-144.68", "v40.49" ] ],
     [ "lcd2:VCC", "pico:3V3", "red", [ "h-73.8", "v88.65" ] ],
-    [ "lcd2:GND", "pico:GND.7", "black", [ "h-78.63", "v126.95" ] ]
+    [ "lcd2:GND", "pico:GND.7", "black", [ "h-78.63", "v126.95" ] ],
+    [ "dht1:VCC", "pico:3V3", "red", [ "v0" ] ],
+    [ "dht1:GND", "pico:GND.7", "black", [ "v0" ] ],
+    [ "dht1:SDA", "pico:GP13", "green", [ "v0" ] ]
   ],
   "dependencies": {}
 }

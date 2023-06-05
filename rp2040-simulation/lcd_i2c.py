@@ -45,7 +45,6 @@ class I2CLCD(LCDAPI):
         self.hal_write_command(cmd)
 
     def hal_write_init_nibble(self, nibble):
-        "Put LCD into 4-bit mode."
         byte = ((nibble >> 4) & 0x0F) << SHIFT_DATA
         self.gpio.write_device([byte | MASK_E])
         self.gpio.write_device([byte])

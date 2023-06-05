@@ -1,5 +1,4 @@
 import time
-import utime
 
 
 class LCDAPI:
@@ -212,8 +211,8 @@ class LCDAPI:
     @staticmethod
     def hal_sleep_us(microseconds: int):
         """Sleep for some time (given in microseconds)."""
-        time.sleep_us(microseconds)
+        time.sleep(microseconds / 1_000_000)
 
     @staticmethod
     def hal_sleep_ms(milliseconds: int):
-        utime.sleep_ms(milliseconds)
+        time.sleep(milliseconds / 1_000)

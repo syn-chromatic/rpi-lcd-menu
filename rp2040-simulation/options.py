@@ -1,44 +1,62 @@
-import gc
 import os
+import gc
 import machine
+
 from abc import ABC, abstractmethod
 from typing import Callable
 from collections import OrderedDict as OrdDict
 
 from sensors import DHT22
+from character import CharABC
+from character import (
+    CharArray,
+    LeftArrowChar,
+    RightArrowChar,
+    RightAngleChar,
+    SpaceChar,
+)
 
 
 class MenuItemBase:
-    def __init__(self, columns: int, shift_hold: int, string: str = ""):
+    def __init__(self, columns: int, shift_hold: int):
         self._columns = columns
-        self._string = string
+        self._char_array: list[CharABC] = []
         self._shift_hold = shift_hold
-        self._st_range = 0
+        self._st_idx = 0
         self._shift_hold_st = 0
         self._shift_hold_en = 0
         self._is_selected = False
 
-    def _get_diff_length(self) -> int:
-        len_string = len(self._string)
-        return len_string - self._st_range
+    def _get_shifted_length(self) -> int:
+        len_string = len(self._char_array)
+        return len_string - self._st_idx
 
-    def _get_max_trim_columns(self) -> int:
-        return self._columns - 4
+    def _get_trimmed_columns(self) -> int:
+        available_columns = self._get_available_columns()
+        st_range = self._st_idx
 
-    def _get_max_columns(self) -> int:
+        if st_range > 0:
+            available_columns -= 1
+
+        if available_columns != len(self._char_array):
+            available_columns -= 1
+
+        return available_columns
+
+    def _get_available_columns(self) -> int:
         return self._columns - 2
 
     def _get_shift_condition(self) -> bool:
-        diff_length = self._get_diff_length()
-        max_trim_cols = self._get_max_trim_columns()
-        max_cols = self._get_max_columns()
-        if len(self._string) > max_cols:
-            if diff_length > max_trim_cols and self._is_selected:
+        shifted_length = self._get_shifted_length()
+        trimmed_columns = self._get_trimmed_columns()
+        available_columns = self._get_available_columns()
+        if len(self._char_array) > available_columns:
+            if shifted_length > trimmed_columns and self._is_selected:
                 return True
         return False
 
     def _get_reset_condition(self):
-        if not self._is_selected and self._st_range != 0:
+        if not self._is_selected and self._st_idx != 0:
             return True
         return False
 
@@ -47,7 +65,7 @@ class MenuItemBase:
 
         if shift_condition:
             if not self._hold_shift_start():
-                self._st_range += 1
+                self._st_idx += 1
             return
 
         if not shift_condition and self._is_selected:
@@ -70,20 +88,39 @@ class MenuItemBase:
             return True
         return False
 
-    def _get_raw_string(self) -> str:
-        diff_length = self._get_diff_length()
-        max_trim_cols = self._get_max_trim_columns()
-        max_cols = self._get_max_columns()
-        if len(self._string) > max_cols:
-            if diff_length >= max_trim_cols:
-                en_range = self._st_range + (self._columns - 4)
-                new_string = self._string[self._st_range : en_range]
-                new_string += ".."
-                return new_string
-        return self._string[self._st_range :]
+    def _fill_preceding_char(self, char_array: list[CharABC], st_range: int):
+        if st_range > 0:
+            char_array.append(LeftArrowChar())
+
+    def _fill_proceeding_char(self, char_array: list[CharABC], en_range: int):
+        if en_range != len(self._char_array):
+            char_array.append(RightArrowChar())
+
+    def _fill_char_array(self, char_array: list[CharABC]):
+        shifted_length = self._get_shifted_length()
+        trimmed_columns = self._get_trimmed_columns()
+        available_columns = self._get_available_columns()
+
+        if len(self._char_array) > available_columns:
+            if shifted_length >= trimmed_columns:
+                st_range = self._st_idx
+                en_range = self._st_idx + trimmed_columns
+                self._fill_preceding_char(char_array, self._st_idx)
+                for idx in range(st_range, en_range):
+                    char_array.append(self._char_array[idx])
+                self._fill_proceeding_char(char_array, en_range)
+                return
+
+        for idx in range(self._st_idx, len(self._char_array)):
+            char_array.append(self._char_array[idx])
+
+    def _get_prefix_char_array(self) -> list[CharABC]:
+        if self._is_selected:
+            return [RightAngleChar(), SpaceChar()]
+        return [SpaceChar(), SpaceChar()]
 
     def _reset(self):
-        self._st_range = 0
+        self._st_idx = 0
         self._shift_hold_st = 0
         self._shift_hold_en = 0
 
@@ -99,12 +136,16 @@ class MenuItem(MenuItemBase):
         self._is_selected = state
 
     def set_string(self, string: str):
-        self._string = string
+        char_array = CharArray().get_ascii_char_array(string)
+        self._char_array = char_array
 
-    def get_string(self) -> str:
-        if self._is_selected:
-            return "> " + self._get_raw_string() + "\n"
-        return "  " + self._get_raw_string() + "\n"
+    def set_char_array(self, char_array: list[CharABC]):
+        self._char_array = char_array
+
+    def get_char_array(self) -> list[CharABC]:
+        char_array = self._get_prefix_char_array()
+        self._fill_char_array(char_array)
+        return char_array
 
     def shift(self):
         self._increment_shift()
@@ -113,9 +154,37 @@ class MenuItem(MenuItemBase):
         self._reset()
 
 
-class Option(ABC):
+class OptionABC(ABC):
     def __init__(self, item: MenuItem):
-        self.item: MenuItem = item
+        pass
+
+    @abstractmethod
+    def back(self):
+        pass
+
+    @abstractmethod
+    def prev(self):
+        pass
+
+    @abstractmethod
+    def next(self):
+        pass
+
+    @abstractmethod
+    def apply(self):
+        pass
+
+    @abstractmethod
+    def get_hold_state(self) -> bool:
+        pass
+
+    @abstractmethod
+    def get_char_array(self) -> list[CharABC]:
+        pass
+
+    @abstractmethod
+    def get_item(self) -> MenuItem:
+        pass
 
     @abstractmethod
     def update(self):
@@ -125,242 +194,284 @@ class Option(ABC):
     def update_shift(self):
         pass
 
-    @abstractmethod
-    def get_string(self) -> str:
-        pass
 
+class StateBool:
+    def __init__(self, state: bool):
+        self.state = state
 
-class OptionToggle(Option):
-    def __init__(self, callback: Callable, state_callback: Callable):
-        self.callback: Callable = callback
-        self.state_callback: Callable = state_callback
-
-    @abstractmethod
     def get_state(self) -> bool:
-        pass
+        return self.state
 
-    @abstractmethod
-    def execute_callback(self):
-        pass
+    def set_state(self, state: bool):
+        self.state = state
 
 
-class OptionRange(Option):
+class StateInt:
+    def __init__(self, state: int):
+        self.state = state
+
+    def get_state(self) -> int:
+        return self.state
+
+    def set_state(self, state: int):
+        self.state = state
+
+
+class LinkedStateBool:
     def __init__(
         self,
-        min_range: int,
-        max_range: int,
-        step: int,
-        assign_callback: Callable,
-        state_callback: Callable,
+        state_callback: Callable[[], bool],
+        assign_callback: Callable[[bool], None],
     ):
-        self.min_range: int = min_range
-        self.max_range: int = max_range
-        self.step: int = step
-        self.assign_callback: Callable = assign_callback
-        self.state_callback: Callable = state_callback
-        self.change_state: bool = False
-
-    @abstractmethod
-    def get_value(self) -> int:
-        pass
-
-    @abstractmethod
-    def get_hold_state(self) -> bool:
-        pass
-
-    @abstractmethod
-    def advance_state(self):
-        pass
-
-    @abstractmethod
-    def back_state(self):
-        pass
-
-    @abstractmethod
-    def increment(self):
-        pass
-
-    def decrement(self):
-        pass
-
-
-class OptionTimeHM(Option):
-    def __init__(self):
-        self.hours: int = 0
-        self.minutes: int = 0
-        self.selected: int = 0
-        self.select_state: bool = False
-        self.change_state: bool = False
-
-    @abstractmethod
-    def get_hold_state(self) -> bool:
-        pass
-
-    @abstractmethod
-    def advance_state(self):
-        pass
-
-    @abstractmethod
-    def back_state(self):
-        pass
-
-    @abstractmethod
-    def increment(self):
-        pass
-
-    def decrement(self):
-        pass
-
-
-class StaticBase(Option):
-    def __init__(self, name: str, item: MenuItem):
-        self.name = name
-        self.item = item
-        self.update_menu_item()
-
-    def update_menu_item(self):
-        self.item.set_string(self.name)
-
-    def update(self):
-        pass
-
-    def update_shift(self):
-        self.item.shift()
-
-    def get_string(self) -> str:
-        return self.item.get_string()
-
-
-class ToggleBase(OptionToggle):
-    def __init__(self, name: str, item: MenuItem, callback, state_callback):
-        self.name = name
-        self.item = item
-        self.callback = callback
         self.state_callback = state_callback
-        self.update_menu_item()
-
-    def update_menu_item(self):
-        string = "{}: {}"
-        state_str = self.get_state_str()
-        string = string.format(self.name, state_str)
-        self.item.set_string(string)
-
-    def get_state_str(self) -> str:
-        if self.get_state():
-            return "ON"
-        return "OFF"
-
-    def update(self):
-        self.update_menu_item()
-
-    def update_shift(self):
-        self.item.shift()
-
-    def get_string(self) -> str:
-        return self.item.get_string()
+        self.assign_callback = assign_callback
 
     def get_state(self) -> bool:
         return self.state_callback()
 
-    def execute_callback(self):
-        state = not self.get_state()
-        self.callback(state)
+    def set_state(self, state: bool):
+        self.assign_callback(state)
 
 
-class RangeBase(OptionRange):
+class LinkedStateInt:
+    def __init__(
+        self,
+        state_callback: Callable[[], int],
+        assign_callback: Callable[[int], None],
+    ):
+        self.state_callback = state_callback
+        self.assign_callback = assign_callback
+
+    def get_state(self) -> int:
+        return self.state_callback()
+
+    def set_state(self, state: int):
+        self.assign_callback(state)
+
+
+class StaticStd(OptionABC):
+    def __init__(self, name: str, item: MenuItem):
+        self.name = name
+        self.item = item
+        self.item.set_string(self.name)
+
+    def back(self):
+        pass
+
+    def prev(self):
+        pass
+
+    def next(self):
+        pass
+
+    def apply(self):
+        pass
+
+    def get_hold_state(self) -> bool:
+        return False
+
+    def get_char_array(self) -> list[CharABC]:
+        return self.item.get_char_array()
+
+    def get_item(self) -> MenuItem:
+        return self.item
+
+    def update(self):
+        pass
+
+    def update_shift(self):
+        self.item.shift()
+
+
+class ToggleBase(OptionABC):
+    def __init__(self, name: str, item: MenuItem, state: LinkedStateBool):
+        self._name = name
+        self._item = item
+        self._state = state
+        self._update_menu_item()
+
+    def _update_menu_item(self):
+        string = "{}: {}"
+        state_str = self._get_state_str()
+        string = string.format(self._name, state_str)
+        self._item.set_string(string)
+
+    def _get_state_str(self) -> str:
+        if self._get_state():
+            return "ON"
+        return "OFF"
+
+    def _get_state(self) -> bool:
+        return self._state.get_state()
+
+    def _switch_state(self):
+        state = not self._state.get_state()
+        self._state.set_state(state)
+
+
+class ToggleStd(ToggleBase):
+    def __init__(self, name: str, item: MenuItem, state: LinkedStateBool):
+        super().__init__(name, item, state)
+
+    def back(self):
+        pass
+
+    def prev(self):
+        pass
+
+    def next(self):
+        pass
+
+    def apply(self):
+        self._switch_state()
+        self.update()
+
+    def get_hold_state(self) -> bool:
+        return False
+
+    def get_char_array(self) -> list[CharABC]:
+        return self._item.get_char_array()
+
+    def get_item(self) -> MenuItem:
+        return self._item
+
+    def update(self):
+        self._update_menu_item()
+
+    def update_shift(self):
+        self._item.shift()
+
+
+class RangeBase(OptionABC):
     def __init__(
         self,
         name: str,
         item: MenuItem,
+        state: LinkedStateInt,
+        step: int,
         min_range: int,
         max_range: int,
-        step: int,
-        assign_callback,
-        state_callback,
     ):
-        self.name = name
-        self.item = item
-        self.min_range = min_range
-        self.max_range = max_range
-        self.step = step
-        self.assign_callback = assign_callback
-        self.state_callback = state_callback
-        self.change_state = False
-        self.update_menu_item()
+        self._name = name
+        self._item = item
+        self._state = state
+        self._step = step
+        self._min_range = min_range
+        self._max_range = max_range
+        self._change_state = False
+        self._update_menu_item()
 
-    def get_state_str(self) -> str:
-        if self.change_state:
-            string = "<{}>"
-            string = string.format(self.get_value())
-            return string
-        string = "{}"
-        string = string.format(self.get_value())
-        return string
-
-    def update_menu_item(self):
+    def _update_menu_item(self):
         string = "{}: {}"
         state_str = self.get_state_str()
-        string = string.format(self.name, state_str)
-        self.item.set_string(string)
+        string = string.format(self._name, state_str)
+        self._item.set_string(string)
 
-    def update(self):
-        self.update_menu_item()
+    def get_state_str(self) -> str:
+        if self._change_state:
+            string = "<{}>"
+            string = string.format(self._get_state())
+            return string
+        string = "{}"
+        string = string.format(self._get_state())
+        return string
 
-    def update_shift(self):
-        self.item.shift()
+    def _get_state(self):
+        return self._state.get_state()
 
-    def get_string(self) -> str:
-        return self.item.get_string()
+    def _advance_state(self):
+        if not self._change_state:
+            self._change_state = True
 
-    def get_value(self):
-        return self.state_callback()
+    def _back_state(self):
+        if self._change_state:
+            self._change_state = False
+
+    def _increment(self):
+        state = self._get_state() + self._step
+        if state <= self._max_range:
+            self._state.set_state(state)
+
+    def _decrement(self):
+        state = self._get_state() - self._step
+        if state >= self._min_range:
+            self._state.set_state(state)
+
+
+class RangeStd(RangeBase):
+    def __init__(
+        self,
+        name: str,
+        item: MenuItem,
+        state: LinkedStateInt,
+        step: int,
+        min_range: int,
+        max_range: int,
+    ):
+        super().__init__(name, item, state, step, min_range, max_range)
+
+    def back(self):
+        self._back_state()
+        self.update()
+
+    def prev(self):
+        self._decrement()
+        self.update()
+
+    def next(self):
+        self._increment()
+        self.update()
+
+    def apply(self):
+        self._advance_state()
+        self.update()
 
     def get_hold_state(self) -> bool:
-        if self.change_state:
+        if self._change_state:
             return True
         return False
 
-    def advance_state(self):
-        if not self.change_state:
-            self.change_state = True
+    def get_char_array(self) -> list[CharABC]:
+        return self._item.get_char_array()
 
-    def back_state(self):
-        if self.change_state:
-            self.change_state = False
+    def get_item(self) -> MenuItem:
+        return self._item
 
-    def increment(self):
-        value = self.get_value() + self.step
-        if value <= self.max_range:
-            self.assign_callback(value)
+    def update(self):
+        self._update_menu_item()
 
-    def decrement(self):
-        value = self.get_value() - self.step
-        if value >= self.min_range:
-            self.assign_callback(value)
+    def update_shift(self):
+        self._item.shift()
 
 
-class TimeBase(OptionTimeHM):
+class TimeBase(OptionABC):
     def __init__(self, name: str, item: MenuItem):
-        self.name = name
-        self.item = item
-        self.hours = 0
-        self.minutes = 0
-        self.selected = 0
-        self.select_state = False
-        self.change_state = False
-        self.update_menu_item()
+        self._name = name
+        self._item = item
+        self._hours = 0
+        self._minutes = 0
+        self._selected = 0
+        self._select_state = False
+        self._change_state = False
+        self._update_menu_item()
 
-    def get_hours_str(self) -> str:
-        if len(str(self.hours)) == 1:
-            return "0" + str(self.hours)
-        return str(self.hours)
+    def _update_menu_item(self):
+        string = "{}: {}"
+        state_str = self._get_state_str()
+        string = string.format(self._name, state_str)
+        self._item.set_string(string)
 
-    def get_minutes_str(self) -> str:
-        if len(str(self.minutes)) == 1:
-            return "0" + str(self.minutes)
-        return str(self.minutes)
+    def _get_hours_str(self) -> str:
+        if len(str(self._hours)) == 1:
+            return "0" + str(self._hours)
+        return str(self._hours)
 
-    def get_time_str(self, segments: list[str]) -> str:
+    def _get_minutes_str(self) -> str:
+        if len(str(self._minutes)) == 1:
+            return "0" + str(self._minutes)
+        return str(self._minutes)
+
+    def _get_time_str(self, segments: list[str]) -> str:
         len_segments = len(segments) - 1
         string = ""
         for idx, seg in enumerate(segments):
@@ -370,260 +481,426 @@ class TimeBase(OptionTimeHM):
                 string += ":"
         return string
 
-    def get_segments(self):
-        hours = self.get_hours_str()
-        minutes = self.get_minutes_str()
+    def _get_segments(self):
+        hours = self._get_hours_str()
+        minutes = self._get_minutes_str()
         segments = [hours, minutes]
         return segments
 
-    def get_time_select(self) -> str:
-        segments = self.get_segments()
+    def _get_time_select(self) -> str:
+        segments = self._get_segments()
         for idx, seg in enumerate(segments):
-            if self.selected == idx:
+            if self._selected == idx:
                 segments[idx] = f"[{seg}]"
-        string = self.get_time_str(segments)
+        string = self._get_time_str(segments)
         return string
 
-    def get_time_change(self) -> str:
-        segments = self.get_segments()
+    def _get_time_change(self) -> str:
+        segments = self._get_segments()
         for idx, seg in enumerate(segments):
-            if self.selected == idx:
+            if self._selected == idx:
                 segments[idx] = f"<{seg}>"
-        string = self.get_time_str(segments)
+        string = self._get_time_str(segments)
         return string
 
-    def get_state_str(self) -> str:
-        if self.select_state and not self.change_state:
-            string = self.get_time_select()
+    def _get_state_str(self) -> str:
+        if self._select_state and not self._change_state:
+            string = self._get_time_select()
             return string
 
-        elif self.select_state and self.change_state:
-            string = self.get_time_change()
+        elif self._select_state and self._change_state:
+            string = self._get_time_change()
             return string
 
-        segments = self.get_segments()
-        string = self.get_time_str(segments)
+        segments = self._get_segments()
+        string = self._get_time_str(segments)
         return string
 
-    def update_menu_item(self):
-        string = "{}: {}"
-        state_str = self.get_state_str()
-        string = string.format(self.name, state_str)
-        self.item.set_string(string)
+    def _advance_state(self):
+        if not self._select_state:
+            self._select_state = True
+            return
+        self._change_state = True
 
-    def update(self):
-        self.update_menu_item()
+    def _back_state(self):
+        if self._change_state:
+            self._change_state = False
+            return
+        self._select_state = False
+        self._selected = 0
 
-    def update_shift(self):
-        self.item.shift()
+    def _increment_selected(self):
+        if self._selected < 1:
+            self._selected += 1
+            return
+        self._selected = 0
 
-    def get_string(self) -> str:
-        return self.item.get_string()
+    def _increment_time(self):
+        if self._selected == 0:
+            if self._hours + 1 < 24:
+                self._hours += 1
+
+        elif self._selected == 1:
+            if self._minutes + 1 < 60:
+                self._minutes += 1
+
+    def _decrement_time(self):
+        if self._selected == 0:
+            if self._hours - 1 >= 0:
+                self._hours -= 1
+
+        elif self._selected == 1:
+            if self._minutes - 1 >= 0:
+                self._minutes -= 1
+
+    def _increment(self):
+        if self._select_state and not self._change_state:
+            self._increment_selected()
+            return
+        if self._select_state and self._change_state:
+            self._increment_time()
+
+    def decrement(self):
+        if self._select_state and not self._change_state:
+            self._increment_selected()
+            return
+        if self._select_state and self._change_state:
+            self._decrement_time()
+
+
+class TimeStd(TimeBase):
+    def __init__(self, name: str, item: MenuItem):
+        super().__init__(name, item)
+
+    def back(self):
+        self._back_state()
+        self.update()
+
+    def prev(self):
+        self.decrement()
+        self.update()
+
+    def next(self):
+        self._increment()
+        self.update()
+
+    def apply(self):
+        self._advance_state()
+        self.update()
 
     def get_hold_state(self) -> bool:
-        if self.select_state or self.change_state:
+        if self._select_state or self._change_state:
             return True
         return False
 
-    def advance_state(self):
-        if not self.select_state:
-            self.select_state = True
-            return
-        self.change_state = True
+    def get_char_array(self) -> list[CharABC]:
+        return self._item.get_char_array()
 
-    def back_state(self):
-        if self.change_state:
-            self.change_state = False
-            return
-        self.select_state = False
-        self.selected = 0
+    def get_item(self) -> MenuItem:
+        return self._item
 
-    def increment_selected(self):
-        if self.selected < 1:
-            self.selected += 1
-            return
-        self.selected = 0
+    def update(self):
+        self._update_menu_item()
 
-    def increment_time(self):
-        if self.selected == 0:
-            if self.hours + 1 < 24:
-                self.hours += 1
-
-        elif self.selected == 1:
-            if self.minutes + 1 < 60:
-                self.minutes += 1
-
-    def decrement_time(self):
-        if self.selected == 0:
-            if self.hours - 1 >= 0:
-                self.hours -= 1
-
-        elif self.selected == 1:
-            if self.minutes - 1 >= 0:
-                self.minutes -= 1
-
-    def increment(self):
-        if self.select_state and not self.change_state:
-            self.increment_selected()
-            return
-        if self.select_state and self.change_state:
-            self.increment_time()
-
-    def decrement(self):
-        if self.select_state and not self.change_state:
-            self.increment_selected()
-            return
-        if self.select_state and self.change_state:
-            self.decrement_time()
+    def update_shift(self):
+        self._item.shift()
 
 
-class MachineName(Option):
+class MachineNameBase(OptionABC):
     def __init__(self, item: MenuItem):
-        self.item = item
-        self.update_menu_item()
+        self._item = item
+        self._update_menu_item()
 
-    def update_menu_item(self):
+    def _update_menu_item(self):
         string = "Name: {}"
-        string = string.format(self.get_machine_name())
-        self.item.set_string(string)
+        string = string.format(self._get_machine_name())
+        self._item.set_string(string)
 
     @staticmethod
-    def get_machine_name() -> str:
+    def _get_machine_name() -> str:
         name = os.uname().machine
         return name
 
+
+class MachineName(MachineNameBase):
+    def __init__(self, item: MenuItem):
+        super().__init__(item)
+
+    def back(self):
+        pass
+
+    def prev(self):
+        pass
+
+    def next(self):
+        pass
+
+    def apply(self):
+        pass
+
+    def get_hold_state(self) -> bool:
+        return False
+
+    def get_char_array(self) -> list[CharABC]:
+        return self._item.get_char_array()
+
+    def get_item(self) -> MenuItem:
+        return self._item
+
     def update(self):
-        self.update_menu_item()
+        self._update_menu_item()
 
     def update_shift(self):
-        self.item.shift()
-
-    def get_string(self) -> str:
-        return self.item.get_string()
+        self._item.shift()
 
 
-class CPUFreq(Option):
+class CPUFreqBase(OptionABC):
     def __init__(self, item: MenuItem):
-        self.item = item
-        self.update_menu_item()
+        self._item = item
+        self._update_menu_item()
 
-    def update_menu_item(self):
+    def _update_menu_item(self):
         string = "Freq: {}Mhz"
-        string = string.format(self.get_cpu_freq())
-        self.item.set_string(string)
+        string = string.format(self._get_cpu_freq())
+        self._item.set_string(string)
 
     @staticmethod
-    def get_cpu_freq() -> int:
+    def _get_cpu_freq() -> int:
         freq = machine.freq() / 1e6
         freq = int(freq)
         return freq
 
+
+class CPUFreq(CPUFreqBase):
+    def __init__(self, item: MenuItem):
+        super().__init__(item)
+
+    def back(self):
+        pass
+
+    def prev(self):
+        pass
+
+    def next(self):
+        pass
+
+    def apply(self):
+        pass
+
+    def get_hold_state(self) -> bool:
+        return False
+
+    def get_char_array(self) -> list[CharABC]:
+        return self._item.get_char_array()
+
+    def get_item(self) -> MenuItem:
+        return self._item
+
     def update(self):
-        self.update_menu_item()
+        self._update_menu_item()
 
     def update_shift(self):
-        self.item.shift()
-
-    def get_string(self) -> str:
-        return self.item.get_string()
+        self._item.shift()
 
 
-class UsedMemory(Option):
+class MemoryUsedBase(OptionABC):
     def __init__(self, item: MenuItem):
-        self.item = item
-        self.update_menu_item()
+        self._item = item
+        self._update_menu_item()
 
-    def update_menu_item(self):
+    def _update_menu_item(self):
         string = "Used Mem: {}KB"
+        string = string.format(self._get_used_memory())
+        self._item.set_string(string)
+
+    @staticmethod
+    def _get_used_memory() -> float:
         used_mem = int(gc.mem_alloc() / 1024)
-        string = string.format(used_mem)
-        self.item.set_string(string)
+        return used_mem
+
+
+class MemoryUsed(MemoryUsedBase):
+    def __init__(self, item: MenuItem):
+        super().__init__(item)
+
+    def back(self):
+        pass
+
+    def prev(self):
+        pass
+
+    def next(self):
+        pass
+
+    def apply(self):
+        pass
+
+    def get_hold_state(self) -> bool:
+        return False
+
+    def get_char_array(self) -> list[CharABC]:
+        return self._item.get_char_array()
+
+    def get_item(self) -> MenuItem:
+        return self._item
 
     def update(self):
-        self.update_menu_item()
+        self._update_menu_item()
 
     def update_shift(self):
-        self.item.shift()
-
-    def get_string(self) -> str:
-        return self.item.get_string()
+        self._item.shift()
 
 
-class FreeMemory(Option):
+class MemoryFreeBase(OptionABC):
     def __init__(self, item: MenuItem):
-        self.item = item
-        self.update_menu_item()
+        self._item = item
+        self._update_menu_item()
 
-    def update_menu_item(self):
+    def _update_menu_item(self):
         string = "Free Mem: {}KB"
-        used_mem = int(gc.mem_free() / 1024)
-        string = string.format(used_mem)
-        self.item.set_string(string)
+        string = string.format(self._get_free_memory())
+        self._item.set_string(string)
+
+    @staticmethod
+    def _get_free_memory() -> float:
+        free_mem = int(gc.mem_free() / 1024)
+        return free_mem
+
+
+class MemoryFree(MemoryFreeBase):
+    def __init__(self, item: MenuItem):
+        super().__init__(item)
+
+    def back(self):
+        pass
+
+    def prev(self):
+        pass
+
+    def next(self):
+        pass
+
+    def apply(self):
+        pass
+
+    def get_hold_state(self) -> bool:
+        return False
+
+    def get_char_array(self) -> list[CharABC]:
+        return self._item.get_char_array()
+
+    def get_item(self) -> MenuItem:
+        return self._item
 
     def update(self):
-        self.update_menu_item()
+        self._update_menu_item()
 
     def update_shift(self):
-        self.item.shift()
-
-    def get_string(self) -> str:
-        return self.item.get_string()
+        self._item.shift()
 
 
-class DHTTemperature(Option):
+class DHTTemperatureBase(OptionABC):
     def __init__(self, item: MenuItem):
-        self.item = item
-        self.dht = DHT22(13)
-        self.update_menu_item()
+        self._item = item
+        self._dht = DHT22(13)
+        self._update_menu_item()
 
-    def update_menu_item(self):
+    def _update_menu_item(self):
         string = "Temp: {}C"
-        string = string.format(self.get_dht_temp())
-        self.item.set_string(string)
+        string = string.format(self._get_dht_temp())
+        self._item.set_string(string)
 
-    def get_dht_temp(self) -> str:
-        return self.dht.temperature()
-
-    def update(self):
-        self.update_menu_item()
-
-    def update_shift(self):
-        self.item.shift()
-
-    def get_string(self) -> str:
-        return self.item.get_string()
+    def _get_dht_temp(self) -> str:
+        return self._dht.temperature()
 
 
-class DHTHumidity(Option):
+class DHTTemperature(DHTTemperatureBase):
     def __init__(self, item: MenuItem):
-        self.item = item
-        self.dht = DHT22(13)
-        self.update_menu_item()
+        super().__init__(item)
 
-    def update_menu_item(self):
-        string = "Humidity: {}%"
-        string = string.format(self.get_dht_temp())
-        self.item.set_string(string)
+    def back(self):
+        pass
 
-    def get_dht_temp(self) -> str:
-        return self.dht.humidity()
+    def prev(self):
+        pass
+
+    def next(self):
+        pass
+
+    def apply(self):
+        pass
+
+    def get_hold_state(self) -> bool:
+        return False
+
+    def get_char_array(self) -> list[CharABC]:
+        return self._item.get_char_array()
+
+    def get_item(self) -> MenuItem:
+        return self._item
 
     def update(self):
-        self.update_menu_item()
+        self._update_menu_item()
 
     def update_shift(self):
-        self.item.shift()
+        self._item.shift()
 
-    def get_string(self) -> str:
-        return self.item.get_string()
+
+class DHTHumidityBase(OptionABC):
+    def __init__(self, item: MenuItem):
+        self._item = item
+        self._dht = DHT22(13)
+        self._update_menu_item()
+
+    def _update_menu_item(self):
+        string = "Humidity: {}%"
+        string = string.format(self._get_dht_temp())
+        self._item.set_string(string)
+
+    def _get_dht_temp(self) -> str:
+        return self._dht.humidity()
+
+
+class DHTHumidity(DHTHumidityBase):
+    def __init__(self, item: MenuItem):
+        super().__init__(item)
+
+    def back(self):
+        pass
+
+    def prev(self):
+        pass
+
+    def next(self):
+        pass
+
+    def apply(self):
+        pass
+
+    def get_hold_state(self) -> bool:
+        return False
+
+    def get_char_array(self) -> list[CharABC]:
+        return self._item.get_char_array()
+
+    def get_item(self) -> MenuItem:
+        return self._item
+
+    def update(self):
+        self._update_menu_item()
+
+    def update_shift(self):
+        self._item.shift()
 
 
 class MenuCreator:
-    def __init__(self, heads: list[Option], submenus: list[OrdDict[Option, OrdDict]]):
+    def __init__(
+        self, heads: list[OptionABC], submenus: list[OrdDict[OptionABC, OrdDict]]
+    ):
         self.heads = heads
         self.submenus = submenus
 
-    def create(self) -> OrdDict[Option, OrdDict]:
+    def create(self) -> OrdDict[OptionABC, OrdDict]:
         if len(self.heads) != len(self.submenus):
             raise Exception()
 

@@ -12,16 +12,16 @@ from options.utils import MenuCreator
 from character.abstracts import CharABC
 from character.chars import SpaceChar
 
-from writers.lcd_writer import LCDWriter
-from controllers.gpio_controller import Controller
+from writers.console_writer import ConsoleWriter
+from controllers.kb_controller import KBController
 
 
-PREV_BUTTON_PIN = 6
-NEXT_BUTTON_PIN = 5
-APPLY_BUTTON_PIN = 4
-BACK_BUTTON_PIN = 27
-LCD_ROWS = 2
-LCD_CHARS = 16
+PREV_BUTTON_KEY = ord("2")
+NEXT_BUTTON_KEY = ord("3")
+APPLY_BUTTON_KEY = ord("4")
+BACK_BUTTON_KEY = ord("1")
+LCD_ROWS = 4
+LCD_CHARS = 20
 
 
 class LCDMenuBase:
@@ -191,14 +191,14 @@ class MenuHandler:
         self.screen = self.get_screen()
         self.main_menu = self.get_main_menu()
         self.lcd_menu = self.get_lcd_menu()
-        self.controller = self.get_controller()
+        self.controller = self.get_kb_controller()
 
-    def get_controller(self) -> Controller:
-        controller = Controller(
-            BACK_BUTTON_PIN,
-            PREV_BUTTON_PIN,
-            NEXT_BUTTON_PIN,
-            APPLY_BUTTON_PIN,
+    def get_kb_controller(self) -> KBController:
+        controller = KBController(
+            BACK_BUTTON_KEY,
+            PREV_BUTTON_KEY,
+            NEXT_BUTTON_KEY,
+            APPLY_BUTTON_KEY,
         )
 
         controller.register_back_callback(self.back_option)
@@ -347,8 +347,8 @@ class MenuHandler:
 
         return menu
 
-    def get_screen(self) -> LCDWriter:
-        screen = LCDWriter(LCD_ROWS, LCD_CHARS)
+    def get_screen(self) -> ConsoleWriter:
+        screen = ConsoleWriter(LCD_ROWS, LCD_CHARS)
         return screen
 
     def get_lcd_menu(self) -> LCDMenu:

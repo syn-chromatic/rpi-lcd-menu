@@ -3,34 +3,32 @@ class abstractmethod:
         self.func = func
 
     def __call__(self, *_, **__):
+        func_name = self.func.__name__
         raise NotImplementedError(
-            "Abstract method %s must be implemented by subclass" % self.func.__name__
+            f"Abstract method {func_name} must be implemented by subclass"
         )
 
 
 class ABC:
+    _checked = False
+
     def __new__(cls, *_, **__):
-        cls._validate_abstract()
+        if not cls._checked:
+            cls._validate_abstract()
+            cls._checked = True
         return super(ABC, cls).__new__(cls)
 
     @staticmethod
     def _join_methods(methods: list[str]) -> str:
-        string = ""
-        len_methods = len(methods) - 1
-        for idx, method in enumerate(methods):
-            string += method
-            if idx != len_methods:
-                string += ", "
-        return string
+        return ", ".join(methods)
 
     @classmethod
     def _validate_abstract(cls):
         non_instantiated = cls._get_non_instantiated()
         if non_instantiated:
             methods = cls._join_methods(non_instantiated)
-            error_seg1 = "Can't instantiate abstract class %s " % cls.__name__
-            error_seg2 = "with abstract methods %s." % methods
-            error = error_seg1 + error_seg2
+            error = f"Can't instantiate abstract class {cls.__name__} \
+                with abstract methods {methods}."
             raise TypeError(error)
 
     @classmethod

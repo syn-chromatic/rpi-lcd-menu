@@ -1,12 +1,12 @@
-from options.abstracts import Option
+from options.abstracts import OptionABC
 
 
 class MenuCreator:
-    def __init__(self, heads: list[Option], submenus: list[dict[Option, dict]]):
+    def __init__(self, heads: list[OptionABC], submenus: list[dict[OptionABC, dict]]):
         self.heads = heads
         self.submenus = submenus
 
-    def create(self) -> dict[Option, dict]:
+    def create(self) -> dict[OptionABC, dict]:
         if len(self.heads) != len(self.submenus):
             raise Exception()
 

@@ -2,12 +2,17 @@ import gc
 import time
 from collections import OrderedDict as OrdDict
 
-from options import Option, OptionToggle, OptionRange, OptionTimeHM
+from options import OptionABC
 from options import MenuItem
-from options import MachineName, CPUFreq, UsedMemory, FreeMemory
+from options import MachineName, CPUFreq, MemoryUsed, MemoryFree
 from options import DHTTemperature, DHTHumidity
-from options import StaticBase, RangeBase, ToggleBase, TimeBase
+from options import StaticStd, RangeStd, ToggleStd, TimeStd
+from options import LinkedStateBool, LinkedStateInt
 from options import MenuCreator
+
+from character import CharABC
+from character import SpaceChar
+
 from lcd_writer import LCDWriter
 from controller import Controller
 
@@ -21,21 +26,28 @@ LCD_CHARS = 20
 
 
 class LCDMenuBase:
-    def __init__(self, rows: int, columns: int, options: OrdDict[Option, OrdDict]):
+    def __init__(self, rows: int, columns: int, options: OrdDict[OptionABC, OrdDict]):
         self._rows: int = rows
         self._columns: int = columns
         self._selected: int = 0
-        self._options: OrdDict[Option, OrdDict] = options
-        self._entries: list[tuple[int, Option]] = []
+        self._options: OrdDict[OptionABC, OrdDict] = options
+        self._entries: list[tuple[int, OptionABC]] = []
+        self._initiate_options(self._options)
 
-    def _get_options(self) -> OrdDict[Option, OrdDict]:
+    def _initiate_options(self, options: OrdDict[OptionABC, OrdDict]):
+        for option in options.keys():
+            option_item = option.get_item()
+            option_item.set_selected(True)
+            return
+
+    def _get_options(self) -> OrdDict[OptionABC, OrdDict]:
         options = self._options
         for _, entry_option in self._entries:
             if entry_option in options:
                 options = options[entry_option]
         return options
 
-    def _get_options_list(self) -> list[Option]:
+    def _get_options_list(self) -> list[OptionABC]:
         options = self._get_options()
         return list(options)
 
@@ -49,123 +61,127 @@ class LCDMenuBase:
         en_range = st_range + self._rows
         return st_range, en_range
 
-    def _add_entry(self, option: Option):
+    def _set_option_selected(self, option: OptionABC):
+        option_item = option.get_item()
+        option_item.set_selected(True)
+
+    def _set_option_deselected(self, option: OptionABC):
+        option_item = option.get_item()
+        option_item.set_selected(False)
+        option_item.reset()
+
+    def _add_entry(self, option: OptionABC):
         options = self._get_options()
         if option in options:
-            if options[option]:
-                option.item.reset()
+            new_options = options[option]
+            if new_options:
                 entry_idx = self._selected
                 self._entries.append((entry_idx, option))
                 self._selected = 0
+                option.get_item().reset()
+                self._initiate_options(new_options)
+                return
+        option.apply()
 
-    def _back_entry(self):
+    def _back_entry(self, option: OptionABC):
         if self._entries:
-            entry_idx, entry_option = self._entries.pop(-1)
+            entry_idx, _ = self._entries.pop(-1)
             self._selected = entry_idx
 
-    def _get_option(self, options_list: list[Option], idx: int):
+            option.get_item().set_selected(False)
+            option.get_item().reset()
+
+    def _get_option(self, options_list: list[OptionABC], idx: int):
         if len(options_list) > idx:
             return options_list[idx]
 
 
 class LCDMenu(LCDMenuBase):
-    def __init__(self, rows: int, columns: int, options: OrdDict[Option, OrdDict]):
+    def __init__(self, rows: int, columns: int, options: OrdDict[OptionABC, OrdDict]):
         super().__init__(rows, columns, options)
+
+    def get_increment_select(self, select: int, options_list: list[OptionABC]) -> int:
+        if select < len(options_list) - 1:
+            select += 1
+            return select
+        select = 0
+        return select
+
+    def get_decrement_select(self, select: int, options_list: list[OptionABC]) -> int:
+        if select > 0:
+            select -= 1
+            return select
+        select = len(options_list) - 1
+        return select
 
     def increment_selection(self):
         options_list = self._get_options_list()
-        option = options_list[self._selected]
+        cur_select = self._selected
+        cur_option = options_list[cur_select]
 
-        if isinstance(option, (OptionRange, OptionTimeHM)):
-            if option.get_hold_state():
-                option.increment()
-                option.update()
-                return
-
-        if self._selected < len(options_list) - 1:
-            self._selected += 1
+        if cur_option.get_hold_state():
+            cur_option.next()
             return
-        self._selected = 0
+
+        new_select = self.get_increment_select(cur_select, options_list)
+        new_option = options_list[new_select]
+
+        self._set_option_deselected(cur_option)
+        self._set_option_selected(new_option)
+        self._selected = new_select
 
     def decrement_selection(self):
         options_list = self._get_options_list()
-        option = options_list[self._selected]
+        cur_select = self._selected
+        cur_option = options_list[cur_select]
 
-        if isinstance(option, (OptionRange, OptionTimeHM)):
-            if option.get_hold_state():
-                option.decrement()
-                option.update()
-                return
-
-        if self._selected > 0:
-            self._selected -= 1
+        if cur_option.get_hold_state():
+            cur_option.prev()
             return
-        self._selected = len(options_list) - 1
 
-    def update_selection(
-        self, options_list: list[Option], st_range: int, en_range: int
-    ):
-        for idx in range(st_range, en_range):
-            option = self._get_option(options_list, idx)
-            if not option:
-                continue
+        new_select = self.get_decrement_select(cur_select, options_list)
+        new_option = options_list[new_select]
 
-            if idx == self._selected:
-                option.item.set_selected(True)
-                continue
-            option.item.set_selected(False)
+        self._set_option_deselected(cur_option)
+        self._set_option_selected(new_option)
+        self._selected = new_select
 
-    def ensure_complete_string(self, string: str, string_lines: int):
-        if string_lines < self._rows:
-            for _ in range(self._rows - string_lines):
-                string += " " * self._columns + "\n"
-        return string
-
-    def get_string(self) -> str:
+    def get_chars(self) -> list[list[CharABC]]:
         st_range, en_range = self._get_option_range()
         options_list = self._get_options_list()
-        self.update_selection(options_list, st_range, en_range)
 
-        string = ""
-        string_lines = 0
+        chars: list[list[CharABC]] = []
+        added_rows = 0
         for idx in range(st_range, en_range):
             option = self._get_option(options_list, idx)
-
             if option:
-                option_name = option.get_string()
+                option_name = option.get_char_array()
                 option.update()
                 option.update_shift()
-                string += option_name
-                string_lines += 1
+                chars.append(option_name)
+                added_rows += 1
 
-        string = self.ensure_complete_string(string, string_lines)
-        return string
+        for _ in range(self._rows - added_rows):
+            row_spaces: list[CharABC] = [SpaceChar()] * self._columns
+            chars.append(row_spaces)
+
+        return chars
 
     def apply_selection(self):
         options_list = self._get_options_list()
         option = options_list[self._selected]
         self._add_entry(option)
-        if isinstance(option, OptionToggle):
-            option.execute_callback()
-            option.update()
-
-        if isinstance(option, (OptionRange, OptionTimeHM)):
-            option.advance_state()
-            option.update()
+        return
 
     def back_selection(self):
         options_list = self._get_options_list()
         option = options_list[self._selected]
 
-        if isinstance(option, (OptionRange, OptionTimeHM)):
-            if option.get_hold_state():
-                option.back_state()
-                option.update()
-                return
+        if option.get_hold_state():
+            option.back()
+            return
 
-        option.item.set_selected(False)
-        option.item.reset()
-        self._back_entry()
+        self._back_entry(option)
 
 
 class MenuHandler:
@@ -202,11 +218,11 @@ class MenuHandler:
     def get_state_callback(self) -> bool:
         return self.screen._lcd.backlight
 
-    def get_system_submenu(self) -> OrdDict[Option, OrdDict]:
+    def get_system_submenu(self) -> OrdDict[OptionABC, OrdDict]:
         machine_name = MachineName(MenuItem(LCD_CHARS))
         cpu_freq = CPUFreq(MenuItem(LCD_CHARS))
-        used_mem = UsedMemory(MenuItem(LCD_CHARS))
-        free_mem = FreeMemory(MenuItem(LCD_CHARS))
+        used_mem = MemoryUsed(MenuItem(LCD_CHARS))
+        free_mem = MemoryFree(MenuItem(LCD_CHARS))
 
         heads = [
             machine_name,
@@ -219,26 +235,40 @@ class MenuHandler:
         menu = MenuCreator(heads, submenus).create()
         return menu
 
-    def get_display_submenu(self) -> OrdDict[Option, OrdDict]:
-        backlight_toggle = ToggleBase(
-            "Backlight",
-            MenuItem(LCD_CHARS),
-            self.backlight_callback,
-            self.get_state_callback,
-        )
-        tick_rate = RangeBase(
-            "Tickrate",
-            MenuItem(LCD_CHARS),
-            10,
-            90,
-            5,
-            self.set_tick_rate,
-            self.get_tick_rate,
+    def get_display_submenu(self) -> OrdDict[OptionABC, OrdDict]:
+        bl_state_callback = self.get_state_callback
+        bl_assign_callback = self.backlight_callback
+        backlight_state = LinkedStateBool(bl_state_callback, bl_assign_callback)
+
+        bl_name = "Backlight"
+        bl_item = MenuItem(LCD_CHARS)
+
+        backlight_toggle = ToggleStd(bl_name, bl_item, backlight_state)
+
+        tick_state_callback = self.get_tick_rate
+        tick_assign_callback = self.set_tick_rate
+        tick_state = LinkedStateInt(tick_state_callback, tick_assign_callback)
+
+        tick_name = "Tickrate"
+        tick_item = MenuItem(LCD_CHARS)
+        tick_step = 5
+        tick_min_range = 10
+        tick_max_range = 90
+
+        tick_rate = RangeStd(
+            tick_name,
+            tick_item,
+            tick_state,
+            tick_step,
+            tick_min_range,
+            tick_max_range,
         )
 
-        time_option = TimeBase("Time", MenuItem(LCD_CHARS))
+        time_name = "Time"
+        time_item = MenuItem(LCD_CHARS)
+        time_option = TimeStd(time_name, time_item)
 
-        heads: list[Option] = [
+        heads: list[OptionABC] = [
             backlight_toggle,
             tick_rate,
             time_option,
@@ -249,27 +279,27 @@ class MenuHandler:
         menu = MenuCreator(heads, submenus).create()
         return menu
 
-    def get_sensors_submenu(self) -> OrdDict[Option, OrdDict]:
+    def get_sensors_submenu(self) -> OrdDict[OptionABC, OrdDict]:
         dht_temp = DHTTemperature(MenuItem(LCD_CHARS))
         dht_humidity = DHTHumidity(MenuItem(LCD_CHARS))
 
-        dht = StaticBase("DHT22", MenuItem(LCD_CHARS))
+        dht = StaticStd("DHT22", MenuItem(LCD_CHARS))
 
-        heads_lvl2: list[Option] = [dht_temp, dht_humidity]
+        heads_lvl2: list[OptionABC] = [dht_temp, dht_humidity]
         submenus_lvl2: list[OrdDict] = [OrdDict(), OrdDict()]
 
-        heads_lvl1: list[Option] = [dht]
+        heads_lvl1: list[OptionABC] = [dht]
         submenus_lvl1: list[OrdDict] = [MenuCreator(heads_lvl2, submenus_lvl2).create()]
 
         menu = MenuCreator(heads_lvl1, submenus_lvl1).create()
         return menu
 
-    def get_main_menu(self) -> OrdDict[Option, OrdDict]:
-        sensors = StaticBase("Sensors", MenuItem(LCD_CHARS))
-        config = StaticBase("Configuration", MenuItem(LCD_CHARS))
-        system_info = StaticBase("System Info", MenuItem(LCD_CHARS))
+    def get_main_menu(self) -> OrdDict[OptionABC, OrdDict]:
+        sensors = StaticStd("Sensors", MenuItem(LCD_CHARS))
+        config = StaticStd("Configuration", MenuItem(LCD_CHARS))
+        system_info = StaticStd("System Info", MenuItem(LCD_CHARS))
 
-        heads: list[Option] = [
+        heads: list[OptionABC] = [
             sensors,
             config,
             system_info,
@@ -293,32 +323,33 @@ class MenuHandler:
 
     def increment_option(self):
         self.lcd_menu.increment_selection()
-        string = self.lcd_menu.get_string()
-        self.screen.write(string, 0.0)
+        chars = self.lcd_menu.get_chars()
+        self.screen.write(chars, 0.0)
 
     def decrement_option(self):
         self.lcd_menu.decrement_selection()
-        string = self.lcd_menu.get_string()
-        self.screen.write(string, 0.0)
+        chars = self.lcd_menu.get_chars()
+        self.screen.write(chars, 0.0)
 
     def apply_option(self):
         self.lcd_menu.apply_selection()
-        string = self.lcd_menu.get_string()
-        self.screen.write(string, 0.0)
+        chars = self.lcd_menu.get_chars()
+        self.screen.write(chars, 0.0)
 
     def back_option(self):
         self.lcd_menu.back_selection()
-        string = self.lcd_menu.get_string()
-        self.screen.write(string, 0.0)
+        chars = self.lcd_menu.get_chars()
+        self.screen.write(chars, 0.0)
 
     def update_options(self):
-        string = self.lcd_menu.get_string()
-        self.screen.write(string, 0.0)
+        chars = self.lcd_menu.get_chars()
+        self.screen.write(chars, 0.0)
 
     def loop(self):
-        string = self.lcd_menu.get_string()
-        self.screen.write(string, 0.0)
+        chars = self.lcd_menu.get_chars()
+        self.screen.write(chars, 0.0)
         counter = 0
+
         while True:
             counter += 1
             self.controller.check()

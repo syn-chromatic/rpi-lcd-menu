@@ -6,7 +6,7 @@ from options.item import MenuItem
 from options.configurations import CPUArch, CPUPerc, CPUFreq, CPUCoreCount
 from options.configurations import MemoryTotal, MemoryUsed, MemoryFree, MemoryPerc
 from options.states import LinkedStateBool, LinkedStateInt
-from options.standards import StaticStd, RangeStd, ToggleStd, TimeStd, ListStd
+from options.standards import StaticStd, LinkedRangeStd, ToggleStd, TimeStd, ListStd
 from options.utils import MenuCreator
 
 from character.abstracts import CharABC
@@ -14,6 +14,8 @@ from character.chars import SpaceChar
 
 from writers.console_writer import ConsoleWriter
 from controllers.kb_controller import KBController
+
+from devices import AddDeviceMenu
 
 
 PREV_BUTTON_KEY = ord("2")
@@ -264,7 +266,7 @@ class MenuHandler:
         tick_min_range = 10
         tick_max_range = 90
 
-        tick_rate = RangeStd(
+        tick_rate = LinkedRangeStd(
             tick_name,
             tick_item,
             tick_state,
@@ -318,7 +320,7 @@ class MenuHandler:
         option_4 = StaticStd("Option 4", MenuItem(LCD_CHARS))
         option_5 = StaticStd("Option 5", MenuItem(LCD_CHARS))
         rolling_test = StaticStd("Testing rolling option", MenuItem(LCD_CHARS))
-
+        devices = StaticStd("Devices", MenuItem(LCD_CHARS))
         config = StaticStd("Configuration", MenuItem(LCD_CHARS))
         system_info = StaticStd("System Info", MenuItem(LCD_CHARS))
 
@@ -329,6 +331,7 @@ class MenuHandler:
             option_4,
             option_5,
             rolling_test,
+            devices,
             config,
             system_info,
         ]
@@ -340,6 +343,7 @@ class MenuHandler:
             {},
             {},
             self.get_test_submenus(),
+            AddDeviceMenu(LCD_CHARS).get_menu(),
             self.get_display_submenu(),
             self.get_system_submenu(),
         ]

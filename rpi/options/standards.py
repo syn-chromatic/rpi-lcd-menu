@@ -185,7 +185,7 @@ class ListStd(ListBase):
         self._item.shift()
 
 
-class RangeBase(OptionABC):
+class LinkedRangeBase(OptionABC):
     def __init__(
         self,
         name: str,
@@ -241,7 +241,7 @@ class RangeBase(OptionABC):
             self._state.set_state(state)
 
 
-class RangeStd(RangeBase):
+class LinkedRangeStd(LinkedRangeBase):
     def __init__(
         self,
         name: str,
@@ -252,6 +252,106 @@ class RangeStd(RangeBase):
         max_range: int,
     ):
         super().__init__(name, item, state, step, min_range, max_range)
+
+    def back(self):
+        self._back_state()
+        self.update()
+
+    def prev(self):
+        self._decrement()
+        self.update()
+
+    def next(self):
+        self._increment()
+        self.update()
+
+    def apply(self):
+        self._advance_state()
+        self.update()
+
+    def get_hold_state(self) -> bool:
+        if self._change_state:
+            return True
+        return False
+
+    def get_char_array(self) -> list[CharABC]:
+        return self._item.get_char_array()
+
+    def get_item(self) -> MenuItem:
+        return self._item
+
+    def update(self):
+        self._update_menu_item()
+
+    def update_shift(self):
+        self._item.shift()
+
+
+class RangeBase(OptionABC):
+    def __init__(
+        self,
+        name: str,
+        item: MenuItem,
+        step: int,
+        min_range: int,
+        max_range: int,
+    ):
+        self._name = name
+        self._item = item
+        self._state = StateInt(0)
+        self._step = step
+        self._min_range = min_range
+        self._max_range = max_range
+        self._change_state = False
+        self._update_menu_item()
+
+    def _update_menu_item(self):
+        string = "{}: {}"
+        state_str = self.get_state_str()
+        string = string.format(self._name, state_str)
+        self._item.set_string(string)
+
+    def get_state_str(self) -> str:
+        if self._change_state:
+            string = "<{}>"
+            string = string.format(self._get_state())
+            return string
+        string = "{}"
+        string = string.format(self._get_state())
+        return string
+
+    def _get_state(self):
+        return self._state.get_state()
+
+    def _advance_state(self):
+        if not self._change_state:
+            self._change_state = True
+
+    def _back_state(self):
+        if self._change_state:
+            self._change_state = False
+
+    def _increment(self):
+        state = self._get_state() + self._step
+        if state <= self._max_range:
+            self._state.set_state(state)
+
+    def _decrement(self):
+        state = self._get_state() - self._step
+        if state >= self._min_range:
+            self._state.set_state(state)
+
+
+class RangeStd(RangeBase):
+    def __init__(
+        self,
+        name: str,
+        item: MenuItem,
+        step: int,
+        min_range: int,
+        max_range: int,
+    ):
+        super().__init__(name, item, step, min_range, max_range)
 
     def back(self):
         self._back_state()

@@ -6,7 +6,7 @@ from options.item import MenuItem
 from options.configurations import CPUArch, CPUPerc, CPUFreq, CPUCoreCount
 from options.configurations import MemoryTotal, MemoryUsed, MemoryFree, MemoryPerc
 from options.states import LinkedStateBool, LinkedStateInt
-from options.standards import StaticStd, RangeStd, ToggleStd, TimeStd, ListStd
+from options.standards import StaticStd, LinkedRangeStd, ToggleStd, TimeStd, ListStd
 from options.utils import MenuCreator
 
 from character.abstracts import CharABC
@@ -264,7 +264,7 @@ class MenuHandler:
         tick_min_range = 10
         tick_max_range = 90
 
-        tick_rate = RangeStd(
+        tick_rate = LinkedRangeStd(
             tick_name,
             tick_item,
             tick_state,

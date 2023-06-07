@@ -2,7 +2,7 @@ import time
 
 from options.abstracts import OptionABC
 from menu.coordinator import MenuCoordinator
-from writers.console_writer import ConsoleWriter
+from writers.lcd_writer import LCDWriter
 from controllers.gpio_controller import Controller
 
 from configurations import CtrlConfigABC, LCDConfigABC
@@ -17,12 +17,12 @@ class MenuHandler:
         self.tick_rate = Tickrate(40)
         self.ctrl_config = ctrl_config
         self.lcd_config = lcd_config
-        self.writer = self.get_console_writer()
+        self.writer = self.get_lcd_writer()
         self.main_menu = self.get_main_menu()
         self.menu_coord = self.get_menu_coord()
-        self.controller = self.get_kb_controller()
+        self.controller = self.get_controller()
 
-    def get_kb_controller(self) -> Controller:
+    def get_controller(self) -> Controller:
         controller = Controller(self.ctrl_config)
         controller.register_back_callback(self.back_option)
         controller.register_prev_callback(self.decrement_option)
@@ -35,10 +35,10 @@ class MenuHandler:
         menu = main_menu.get_menu()
         return menu
 
-    def get_console_writer(self) -> ConsoleWriter:
+    def get_lcd_writer(self) -> LCDWriter:
         rows = self.lcd_config.lcd_rows
         columns = self.lcd_config.lcd_columns
-        writer = ConsoleWriter(rows, columns)
+        writer = LCDWriter(rows, columns)
         return writer
 
     def get_menu_coord(self) -> MenuCoordinator:

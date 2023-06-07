@@ -1,13 +1,15 @@
-from typing import Callable
+from configurations import KBCtrlConfigABC
 from msvcrt import getch, kbhit
+
+from typing import Callable
 
 
 class KBControllerBase:
-    def __init__(self, back_key: int, prev_key: int, next_key: int, apply_key: int):
-        self._back_key = back_key
-        self._prev_key = prev_key
-        self._next_key = next_key
-        self._apply_key = apply_key
+    def __init__(self, ctrl_config: KBCtrlConfigABC):
+        self._back_key = ctrl_config.back_key
+        self._prev_key = ctrl_config.prev_key
+        self._next_key = ctrl_config.next_key
+        self._apply_key = ctrl_config.apply_key
         self._back_callback = None
         self._prev_callback = None
         self._next_callback = None
@@ -31,8 +33,8 @@ class KBControllerBase:
 
 
 class KBController(KBControllerBase):
-    def __init__(self, back_key: int, prev_key: int, next_key: int, apply_key: int):
-        super().__init__(back_key, prev_key, next_key, apply_key)
+    def __init__(self, ctrl_config: KBCtrlConfigABC):
+        super().__init__(ctrl_config)
 
     def register_back_callback(self, callback: Callable):
         self._back_callback = callback

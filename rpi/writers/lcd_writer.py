@@ -1,11 +1,12 @@
 from lcd.i2c import I2CLCD
 from time import sleep
 
+from writers.abstracts import WriterABC
 from character.abstracts import CharABC, ASCIICharABC, ByteCharABC
 from character.chars import SpaceChar
 
 
-class LCDWriterBase:
+class LCDWriterBase(WriterABC):
     def __init__(self, rows: int, columns: int):
         self._rows = rows
         self._columns = columns

@@ -9,7 +9,7 @@ from configurations import CtrlConfigABC, LCDConfigABC
 from configurations import CtrlConfig, LCD1602Config
 
 from menu.tickrate import Tickrate
-from menu.tables import MainMenu
+from menu.setups.default.main import MainMenu
 
 
 class MenuHandler:

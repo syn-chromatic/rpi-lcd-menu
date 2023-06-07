@@ -10,11 +10,16 @@ from character.abstracts import CharABC
 class CPUArchBase(OptionABC):
     def __init__(self, item: MenuItem):
         self._item = item
+        self._value = self._get_cpu_name()
         self._update_menu_item()
+
+    def _get_value(self) -> str:
+        self._value = self._get_cpu_name()
+        return self._value
 
     def _update_menu_item(self):
         string = "CPU: {}"
-        string = string.format(self._get_cpu_name())
+        string = string.format(self._get_value())
         self._item.set_string(string)
 
     @staticmethod
@@ -58,11 +63,16 @@ class CPUArch(CPUArchBase):
 class CPUPercBase(OptionABC):
     def __init__(self, item: MenuItem):
         self._item = item
+        self._value = self._get_cpu_perc()
         self._update_menu_item()
+
+    def _get_value(self) -> float:
+        self._value = self._get_cpu_perc()
+        return self._value
 
     def _update_menu_item(self):
         string = "Perc: {}%"
-        string = string.format(self._get_cpu_perc())
+        string = string.format(self._get_value())
         self._item.set_string(string)
 
     @staticmethod
@@ -106,11 +116,16 @@ class CPUPerc(CPUPercBase):
 class CPUFreqBase(OptionABC):
     def __init__(self, item: MenuItem):
         self._item = item
+        self._value = self._get_cpu_freq()
         self._update_menu_item()
+
+    def _get_value(self) -> int:
+        self._value = self._get_cpu_freq()
+        return self._value
 
     def _update_menu_item(self):
         string = "Freq: {}Mhz"
-        string = string.format(self._get_cpu_freq())
+        string = string.format(self._get_value())
         self._item.set_string(string)
 
     @staticmethod
@@ -155,11 +170,15 @@ class CPUFreq(CPUFreqBase):
 class CPUCoreCountBase(OptionABC):
     def __init__(self, item: MenuItem):
         self._item = item
+        self._value = self._get_core_count()
         self._update_menu_item()
+
+    def _get_value(self) -> int:
+        return self._value
 
     def _update_menu_item(self):
         string = "Core Count: {}"
-        string = string.format(self._get_core_count())
+        string = string.format(self._get_value())
         self._item.set_string(string)
 
     @staticmethod
@@ -203,11 +222,16 @@ class CPUCoreCount(CPUCoreCountBase):
 class MemoryTotalBase(OptionABC):
     def __init__(self, item: MenuItem):
         self._item = item
+        self._value = self._get_total_memory()
         self._update_menu_item()
+
+    def _get_value(self) -> float:
+        self._value = self._get_total_memory()
+        return self._value
 
     def _update_menu_item(self):
         string = "TMem: {:.1f}GB"
-        string = string.format(self._get_total_memory())
+        string = string.format(self._get_value())
         self._item.set_string(string)
 
     @staticmethod
@@ -252,11 +276,16 @@ class MemoryTotal(MemoryTotalBase):
 class MemoryUsedBase(OptionABC):
     def __init__(self, item: MenuItem):
         self._item = item
+        self._value = self._get_used_memory()
         self._update_menu_item()
+
+    def _get_value(self):
+        self._value = self._get_used_memory()
+        return self._value
 
     def _update_menu_item(self):
         string = "UMem: {:.1f}GB"
-        string = string.format(self._get_used_memory())
+        string = string.format(self._get_value())
         self._item.set_string(string)
 
     @staticmethod
@@ -301,11 +330,16 @@ class MemoryUsed(MemoryUsedBase):
 class MemoryFreeBase(OptionABC):
     def __init__(self, item: MenuItem):
         self._item = item
+        self._value = self._get_free_memory()
         self._update_menu_item()
+
+    def _get_value(self):
+        self._value = self._get_free_memory()
+        return self._value
 
     def _update_menu_item(self):
         string = "FMem: {:.1f}GB"
-        string = string.format(self._get_free_memory())
+        string = string.format(self._get_value())
         self._item.set_string(string)
 
     @staticmethod
@@ -350,11 +384,16 @@ class MemoryFree(MemoryFreeBase):
 class MemoryPercBase(OptionABC):
     def __init__(self, item: MenuItem):
         self._item = item
+        self._value = self._get_memory_percentage()
         self._update_menu_item()
+
+    def _get_value(self) -> int:
+        self._value = self._get_memory_percentage()
+        return self._value
 
     def _update_menu_item(self):
         string = "PMem: {}%"
-        string = string.format(self._get_memory_percentage())
+        string = string.format(self._get_value())
         self._item.set_string(string)
 
     @staticmethod

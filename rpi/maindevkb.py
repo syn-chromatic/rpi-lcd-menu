@@ -9,7 +9,7 @@ from configurations import KBCtrlConfigABC, LCDConfigABC
 from configurations import KBCtrlConfig, LCD2004Config
 
 from menu.tickrate import Tickrate
-from menu.tables import MainMenu
+from menu.setups.default.main import MainMenu
 
 
 class MenuHandler:

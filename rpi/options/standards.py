@@ -1,12 +1,12 @@
 from options.abstracts import OptionABC
 
-from options.states import StateInt, LinkedStateBool, LinkedStateInt
+from options.events import ActionEvent, BoolEvent, IntEvent, StrEvent
 from options.item import MenuItem
 
 from character.abstracts import CharABC
 
 
-class StaticStd(OptionABC):
+class StaticOption(OptionABC):
     def __init__(self, name: str, item: MenuItem):
         self.name = name
         self.item = item
@@ -40,15 +40,103 @@ class StaticStd(OptionABC):
         self.item.shift()
 
 
-class ToggleBase(OptionABC):
-    def __init__(self, name: str, item: MenuItem, state: LinkedStateBool):
+class SActionOptionEvent(OptionABC):
+    def __init__(
+        self,
+        name: str,
+        success_name: str,
+        item: MenuItem,
+        event: ActionEvent,
+    ):
+        self.name = name
+        self.success_name = success_name
+        self.item = item
+        self.event = event
+        self.executed = False
+        self.item.set_string(self.name)
+
+    def back(self):
+        pass
+
+    def prev(self):
+        pass
+
+    def next(self):
+        pass
+
+    def apply(self):
+        if not self.executed:
+            self.event.call()
+            self.item.set_string(self.success_name)
+            self.executed = True
+        self.update()
+
+    def get_hold_state(self) -> bool:
+        return False
+
+    def get_char_array(self) -> list[CharABC]:
+        return self.item.get_char_array()
+
+    def get_item(self) -> MenuItem:
+        return self.item
+
+    def update(self):
+        pass
+
+    def update_shift(self):
+        self.item.shift()
+
+
+class ActionOptionEvent(OptionABC):
+    def __init__(
+        self,
+        name: str,
+        item: MenuItem,
+        event: ActionEvent,
+    ):
+        self.name = name
+        self.item = item
+        self.event = event
+        self.item.set_string(self.name)
+
+    def back(self):
+        pass
+
+    def prev(self):
+        pass
+
+    def next(self):
+        pass
+
+    def apply(self):
+        self.event.call()
+        self.update()
+
+    def get_hold_state(self) -> bool:
+        return False
+
+    def get_char_array(self) -> list[CharABC]:
+        return self.item.get_char_array()
+
+    def get_item(self) -> MenuItem:
+        return self.item
+
+    def update(self):
+        pass
+
+    def update_shift(self):
+        self.item.shift()
+
+
+class ToggleOptionEventBase(OptionABC):
+    def __init__(self, name: str, item: MenuItem, event: BoolEvent):
         self._name = name
         self._item = item
-        self._state = state
+        self._event = event
         self._update_menu_item()
 
     def _update_menu_item(self):
-        string = "{}: {}"
+        string = "{}; {}"
         state_str = self._get_state_str()
         string = string.format(self._name, state_str)
         self._item.set_string(string)
@@ -59,16 +147,16 @@ class ToggleBase(OptionABC):
         return "OFF"
 
     def _get_state(self) -> bool:
-        return self._state.get_state()
+        return self._event.get_state()
 
     def _switch_state(self):
-        state = not self._state.get_state()
-        self._state.set_state(state)
+        state = not self._event.get_state()
+        self._event.set_state(state)
 
 
-class ToggleStd(ToggleBase):
-    def __init__(self, name: str, item: MenuItem, state: LinkedStateBool):
-        super().__init__(name, item, state)
+class ToggleOptionEvent(ToggleOptionEventBase):
+    def __init__(self, name: str, item: MenuItem, event: BoolEvent):
+        super().__init__(name, item, event)
 
     def back(self):
         pass
@@ -81,6 +169,7 @@ class ToggleStd(ToggleBase):
 
     def apply(self):
         self._switch_state()
+        self._item.reset()
         self.update()
 
     def get_hold_state(self) -> bool:
@@ -99,18 +188,78 @@ class ToggleStd(ToggleBase):
         self._item.shift()
 
 
-class ListBase(OptionABC):
+class ToggleOptionBase(OptionABC):
+    def __init__(self, name: str, item: MenuItem):
+        self._name = name
+        self._item = item
+        self._state = False
+        self._update_menu_item()
+
+    def _update_menu_item(self):
+        string = "{}; {}"
+        state_str = self._get_state_str()
+        string = string.format(self._name, state_str)
+        self._item.set_string(string)
+
+    def _get_state_str(self) -> str:
+        if self._get_state():
+            return "ON"
+        return "OFF"
+
+    def _get_state(self) -> bool:
+        return self._state
+
+    def _switch_state(self):
+        state = not self._state
+        self._state = state
+
+
+class ToggleOption(ToggleOptionBase):
+    def __init__(self, name: str, item: MenuItem):
+        super().__init__(name, item)
+
+    def back(self):
+        pass
+
+    def prev(self):
+        pass
+
+    def next(self):
+        pass
+
+    def apply(self):
+        self._switch_state()
+        self._item.reset()
+        self.update()
+
+    def get_hold_state(self) -> bool:
+        return False
+
+    def get_char_array(self) -> list[CharABC]:
+        return self._item.get_char_array()
+
+    def get_item(self) -> MenuItem:
+        return self._item
+
+    def update(self):
+        self._update_menu_item()
+
+    def update_shift(self):
+        self._item.shift()
+
+
+class ListOptionBase(OptionABC):
     def __init__(self, name: str, item: MenuItem, item_list: list[str]):
         self._name = name
         self._item = item
         self._item_list = item_list
+        self._idx = 0
         self._max_idx = len(item_list) - 1
-        self._state = StateInt(0)
         self._change_state = False
         self._update_menu_item()
 
     def _update_menu_item(self):
-        string = "{}: {}"
+        string = "{}; {}"
         state_str = self._get_state_str()
         string = string.format(self._name, state_str)
         self._item.set_string(string)
@@ -133,38 +282,41 @@ class ListBase(OptionABC):
             self._change_state = False
 
     def _increment(self):
-        idx = self._state.get_state() + 1
+        idx = self._idx + 1
         if idx <= self._max_idx:
-            self._state.set_state(idx)
+            self._idx = idx
 
     def _decrement(self):
-        idx = self._state.get_state() - 1
+        idx = self._idx - 1
         if idx >= 0:
-            self._state.set_state(idx)
+            self._idx = idx
 
     def _get_value(self) -> str:
-        idx = self._state.get_state()
-        return self._item_list[idx]
+        return self._item_list[self._idx]
 
 
-class ListStd(ListBase):
+class ListOption(ListOptionBase):
     def __init__(self, name: str, item: MenuItem, item_list: list[str]):
         super().__init__(name, item, item_list)
 
     def back(self):
         self._back_state()
+        self._item.reset()
         self.update()
 
     def prev(self):
         self._decrement()
+        self._item.reset()
         self.update()
 
     def next(self):
         self._increment()
+        self._item.reset()
         self.update()
 
     def apply(self):
         self._advance_state()
+        self._item.reset()
         self.update()
 
     def get_hold_state(self) -> bool:
@@ -185,42 +337,37 @@ class ListStd(ListBase):
         self._item.shift()
 
 
-class LinkedRangeBase(OptionABC):
+class ListOptionEventBase(OptionABC):
     def __init__(
         self,
         name: str,
         item: MenuItem,
-        state: LinkedStateInt,
-        step: int,
-        min_range: int,
-        max_range: int,
+        event: StrEvent,
+        item_list: list[str],
     ):
         self._name = name
         self._item = item
-        self._state = state
-        self._step = step
-        self._min_range = min_range
-        self._max_range = max_range
+        self._event = event
+        self._item_list = item_list
+        self._idx = 0
+        self._max_idx = len(item_list) - 1
         self._change_state = False
         self._update_menu_item()
 
     def _update_menu_item(self):
-        string = "{}: {}"
-        state_str = self.get_state_str()
+        string = "{}; {}"
+        state_str = self._get_state_str()
         string = string.format(self._name, state_str)
         self._item.set_string(string)
 
-    def get_state_str(self) -> str:
+    def _get_state_str(self) -> str:
         if self._change_state:
             string = "<{}>"
-            string = string.format(self._get_state())
+            string = string.format(self._get_value())
             return string
         string = "{}"
-        string = string.format(self._get_state())
+        string = string.format(self._get_value())
         return string
-
-    def _get_state(self):
-        return self._state.get_state()
 
     def _advance_state(self):
         if not self._change_state:
@@ -231,42 +378,49 @@ class LinkedRangeBase(OptionABC):
             self._change_state = False
 
     def _increment(self):
-        state = self._get_state() + self._step
-        if state <= self._max_range:
-            self._state.set_state(state)
+        idx = self._idx + 1
+        if idx <= self._max_idx:
+            self._idx = idx
+            self._event.set_state(self._get_value())
 
     def _decrement(self):
-        state = self._get_state() - self._step
-        if state >= self._min_range:
-            self._state.set_state(state)
+        idx = self._idx - 1
+        if idx >= 0:
+            self._idx = idx
+            self._event.set_state(self._get_value())
+
+    def _get_value(self) -> str:
+        return self._item_list[self._idx]
 
 
-class LinkedRangeStd(LinkedRangeBase):
+class ListOptionEvent(ListOptionEventBase):
     def __init__(
         self,
         name: str,
         item: MenuItem,
-        state: LinkedStateInt,
-        step: int,
-        min_range: int,
-        max_range: int,
+        event: StrEvent,
+        item_list: list[str],
     ):
-        super().__init__(name, item, state, step, min_range, max_range)
+        super().__init__(name, item, event, item_list)
 
     def back(self):
         self._back_state()
+        self._item.reset()
         self.update()
 
     def prev(self):
         self._decrement()
+        self._item.reset()
         self.update()
 
     def next(self):
         self._increment()
+        self._item.reset()
         self.update()
 
     def apply(self):
         self._advance_state()
+        self._item.reset()
         self.update()
 
     def get_hold_state(self) -> bool:
@@ -287,18 +441,19 @@ class LinkedRangeStd(LinkedRangeBase):
         self._item.shift()
 
 
-class RangeBase(OptionABC):
+class RangeOptionEventBase(OptionABC):
     def __init__(
         self,
         name: str,
         item: MenuItem,
+        event: IntEvent,
         step: int,
         min_range: int,
         max_range: int,
     ):
         self._name = name
         self._item = item
-        self._state = StateInt(0)
+        self._event = event
         self._step = step
         self._min_range = min_range
         self._max_range = max_range
@@ -306,7 +461,7 @@ class RangeBase(OptionABC):
         self._update_menu_item()
 
     def _update_menu_item(self):
-        string = "{}: {}"
+        string = "{}; {}"
         state_str = self.get_state_str()
         string = string.format(self._name, state_str)
         self._item.set_string(string)
@@ -320,8 +475,8 @@ class RangeBase(OptionABC):
         string = string.format(self._get_state())
         return string
 
-    def _get_state(self):
-        return self._state.get_state()
+    def _get_state(self) -> int:
+        return self._event.get_state()
 
     def _advance_state(self):
         if not self._change_state:
@@ -334,15 +489,120 @@ class RangeBase(OptionABC):
     def _increment(self):
         state = self._get_state() + self._step
         if state <= self._max_range:
-            self._state.set_state(state)
+            self._event.set_state(state)
 
     def _decrement(self):
         state = self._get_state() - self._step
         if state >= self._min_range:
-            self._state.set_state(state)
+            self._event.set_state(state)
 
 
-class RangeStd(RangeBase):
+class RangeOptionEvent(RangeOptionEventBase):
+    def __init__(
+        self,
+        name: str,
+        item: MenuItem,
+        event: IntEvent,
+        step: int,
+        min_range: int,
+        max_range: int,
+    ):
+        super().__init__(name, item, event, step, min_range, max_range)
+
+    def back(self):
+        self._back_state()
+        self._item.reset()
+        self.update()
+
+    def prev(self):
+        self._decrement()
+        self._item.reset()
+        self.update()
+
+    def next(self):
+        self._increment()
+        self._item.reset()
+        self.update()
+
+    def apply(self):
+        self._advance_state()
+        self._item.reset()
+        self.update()
+
+    def get_hold_state(self) -> bool:
+        if self._change_state:
+            return True
+        return False
+
+    def get_char_array(self) -> list[CharABC]:
+        return self._item.get_char_array()
+
+    def get_item(self) -> MenuItem:
+        return self._item
+
+    def update(self):
+        self._update_menu_item()
+
+    def update_shift(self):
+        self._item.shift()
+
+
+class RangeOptionBase(OptionABC):
+    def __init__(
+        self,
+        name: str,
+        item: MenuItem,
+        step: int,
+        min_range: int,
+        max_range: int,
+    ):
+        self._name = name
+        self._item = item
+        self._value = min_range
+        self._step = step
+        self._min_range = min_range
+        self._max_range = max_range
+        self._change_state = False
+        self._update_menu_item()
+
+    def _update_menu_item(self):
+        string = "{}; {}"
+        state_str = self.get_state_str()
+        string = string.format(self._name, state_str)
+        self._item.set_string(string)
+
+    def get_state_str(self) -> str:
+        if self._change_state:
+            string = "<{}>"
+            string = string.format(self._get_value())
+            return string
+        string = "{}"
+        string = string.format(self._get_value())
+        return string
+
+    def _advance_state(self):
+        if not self._change_state:
+            self._change_state = True
+
+    def _back_state(self):
+        if self._change_state:
+            self._change_state = False
+
+    def _increment(self):
+        value = self._value + self._step
+        if value <= self._max_range:
+            self._value = value
+
+    def _decrement(self):
+        value = self._value - self._step
+        if value >= self._min_range:
+            self._value = value
+
+    def _get_value(self) -> int:
+        return self._value
+
+
+class RangeOption(RangeOptionBase):
     def __init__(
         self,
         name: str,
@@ -355,18 +615,22 @@ class RangeStd(RangeBase):
 
     def back(self):
         self._back_state()
+        self._item.reset()
         self.update()
 
     def prev(self):
         self._decrement()
+        self._item.reset()
         self.update()
 
     def next(self):
         self._increment()
+        self._item.reset()
         self.update()
 
     def apply(self):
         self._advance_state()
+        self._item.reset()
         self.update()
 
     def get_hold_state(self) -> bool:
@@ -399,7 +663,7 @@ class TimeBase(OptionABC):
         self._update_menu_item()
 
     def _update_menu_item(self):
-        string = "{}: {}"
+        string = "{}; {}"
         state_str = self._get_state_str()
         string = string.format(self._name, state_str)
         self._item.set_string(string)
@@ -511,24 +775,28 @@ class TimeBase(OptionABC):
             self._decrement_time()
 
 
-class TimeStd(TimeBase):
+class TimeOption(TimeBase):
     def __init__(self, name: str, item: MenuItem):
         super().__init__(name, item)
 
     def back(self):
         self._back_state()
+        self._item.reset()
         self.update()
 
     def prev(self):
         self.decrement()
+        self._item.reset()
         self.update()
 
     def next(self):
         self._increment()
+        self._item.reset()
         self.update()
 
     def apply(self):
         self._advance_state()
+        self._item.reset()
         self.update()
 
     def get_hold_state(self) -> bool:

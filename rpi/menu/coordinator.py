@@ -52,6 +52,7 @@ class MenuCoordinatorBase:
 
     def _add_entry(self, option: OptionABC):
         options = self._get_options()
+        option.apply()
         if option in options:
             new_options = options[option]
             if new_options:
@@ -61,7 +62,7 @@ class MenuCoordinatorBase:
                 option.get_item().reset()
                 self._initiate_options(new_options)
                 return
-        option.apply()
+
 
     def _back_entry(self, option: OptionABC):
         if self._entries:

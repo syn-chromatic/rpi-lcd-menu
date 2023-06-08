@@ -14,6 +14,8 @@ from options.item import MenuItem
 from options.utils import MenuCreator
 from options.events import IntEvent, StrEvent, ActionEvent
 
+from functools import partial
+
 
 class Device:
     def __init__(self):
@@ -193,18 +195,27 @@ class AddDeviceMenuBase:
         option = ListOptionEvent(name, menu_item, event, item_list)
         return option
 
+    def _delete_device(self, device_option: OptionABC):
+        self._menu.pop(device_option)
+
     def _create_new_device(self) -> dict[OptionABC, dict]:
-        device_info = DeviceInfo(self._lcd_config, self._device)
-        device_control = DeviceControl(self._lcd_config, self._device)
-
-        info_menu = device_info.get_info_menu()
-        control_menu = device_control.get_control_menu()
-        submenus = {**info_menu, **control_menu}
-
         pin = self._device.get_pin()
         name = f"Device ({pin})"
         menu_item = self._get_menu_item()
         option = StaticOption(name, menu_item)
+
+        device_info = DeviceInfo(self._lcd_config, self._device)
+        device_control = DeviceControl(self._lcd_config, self._device)
+        func = partial(self._delete_device, option)
+
+        delete_name = "[Delete]"
+        menu_item = self._get_menu_item()
+        delete_event = ActionEvent(func)
+        device_delete = ActionOptionEvent(delete_name, menu_item, delete_event)
+
+        info_menu = device_info.get_info_menu()
+        control_menu = device_control.get_control_menu()
+        submenus = {**info_menu, **control_menu, **{device_delete: {}}}
 
         heads: list[OptionABC] = [option]
         submenus = [submenus]

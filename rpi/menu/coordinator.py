@@ -25,11 +25,17 @@ class MenuCoordinatorBase:
         for _, entry_option in self._entries:
             if entry_option in options:
                 options = options[entry_option]
+                continue
+            self._entries.pop()
+            self._selected = 0
+            option = list(options)[0]
+            option.get_item().set_selected(True)
         return options
 
     def _get_options_list(self) -> list[OptionABC]:
         options = self._get_options()
-        return list(options)
+        options_list = list(options)
+        return options_list
 
     def _get_option_range(self) -> tuple[int, int]:
         if self._selected < self._rows:
@@ -62,7 +68,6 @@ class MenuCoordinatorBase:
                 option.get_item().reset()
                 self._initiate_options(new_options)
                 return
-
 
     def _back_entry(self, option: OptionABC):
         if self._entries:

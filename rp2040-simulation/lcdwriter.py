@@ -1,11 +1,35 @@
-from lcd_i2c import I2CLCD
+from abc import ABC, abstractmethod
 from time import sleep
 
-from character import CharABC, ASCIICharABC, ByteCharABC
-from character import SpaceChar
+from lcdapi import LCDAPI
+
+from characters import CharABC, ASCIICharABC, ByteCharABC
+from characters import SpaceChar
 
 
-class LCDWriterBase:
+class WriterABC(ABC):
+    def __init__(self, rows: int, columns: int):
+        self.rows = rows
+        self.columns = columns
+
+    @abstractmethod
+    def write_with_cursor(self, chars: list[list[CharABC]], hold_time: float):
+        pass
+
+    @abstractmethod
+    def write(self, chars: list[list[CharABC]], hold_time: float):
+        pass
+
+    @abstractmethod
+    def set_backlight(self, backlight_bool: bool):
+        pass
+
+    @abstractmethod
+    def get_backlight_state(self) -> bool:
+        pass
+
+
+class LCDWriterBase(WriterABC):
     def __init__(self, rows: int, columns: int):
         self._rows = rows
         self._columns = columns
@@ -13,8 +37,8 @@ class LCDWriterBase:
         self._row_states: list[int] = [0] * rows
         self._row_data: list[list[CharABC]] = [[]] * rows
 
-    def _get_lcd(self) -> I2CLCD:
-        lcd = I2CLCD(0, 0x27, self._rows, self._columns)
+    def _get_lcd(self) -> LCDAPI:
+        lcd = LCDAPI(0, 0x27, self._rows, self._columns)
         return lcd
 
     def _set_row_state(self, chars: list[CharABC], row: int):
@@ -49,13 +73,13 @@ class LCDWriterBase:
         if isinstance(char, ASCIICharABC):
             self._lcd.move_to(column, row)
             value = char.get_value()
-            self._lcd.putchar(value)
+            self._lcd.put_character_code(value)
             return
 
         elif isinstance(char, ByteCharABC):
             self._lcd.move_to(column, row)
             value = char.get_value()
-            self._lcd.putchar(value)
+            self._lcd.put_character_code(value)
             return
 
         raise NotImplementedError(f"Not Implemented: {char}")

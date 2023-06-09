@@ -1,22 +1,146 @@
+from tickrate import Tickrate
+from lcdwriter import WriterABC
 from configurations import LCDConfigABC
 
-from options.abstracts import OptionABC
-from options.standards import StaticOption
-from options.standards import (
+from options import OptionABC
+from options import StaticOption
+from options import MenuItem
+from options import MenuCreator
+from options import (
     BoolEvent,
     RangeOptionEvent,
     SActionOptionEvent,
     ActionOptionEvent,
     ListOptionEvent,
-    ToggleOption,
     ToggleOptionEvent,
 )
+from options import IntEvent, StrEvent, ActionEvent
+from devices import RelayDevice
+from options import TimeOption, ListOption
 
-from options.item import MenuItem
-from options.utils import MenuCreator
-from options.events import IntEvent, StrEvent, ActionEvent
 
-# from devices.relay import RelayDevice
+from options import MachineName, CPUFreq
+from options import MemoryFree, MemoryUsed
+
+from collections import OrderedDict as OrdDict
+
+
+class SystemInfoMenu:
+    def __init__(self, lcd_config: LCDConfigABC):
+        self.lcd_config = lcd_config
+
+    def get_menu_item(self) -> MenuItem:
+        columns = self.lcd_config.lcd_columns
+        return MenuItem(columns)
+
+    def get_heads(self) -> list[OptionABC]:
+        machine_name = MachineName(self.get_menu_item())
+        cpu_freq = CPUFreq(self.get_menu_item())
+        mem_free = MemoryFree(self.get_menu_item())
+        mem_used = MemoryUsed(self.get_menu_item())
+
+        heads = [
+            machine_name,
+            cpu_freq,
+            mem_free,
+            mem_used,
+        ]
+        return heads
+
+    def get_submenus(self, heads: list[OptionABC]) -> list[OrdDict]:
+        submenus = [OrdDict()] * len(heads)
+        return submenus
+
+    def get_menu(self) -> OrdDict[OptionABC, OrdDict]:
+        heads = self.get_heads()
+        submenus = self.get_submenus(heads)
+        menu = MenuCreator(heads, submenus).create()
+        return menu
+
+
+class ConfigurationMenu:
+    def __init__(
+        self,
+        writer: WriterABC,
+        lcd_config: LCDConfigABC,
+        tickrate: Tickrate,
+    ):
+        self.writer = writer
+        self.lcd_config = lcd_config
+        self.tickrate = tickrate
+
+    def get_menu_item(self) -> MenuItem:
+        columns = self.lcd_config.lcd_columns
+        return MenuItem(columns)
+
+    def get_backlight_option(self) -> ToggleOptionEvent:
+        get_backlight = self.writer.get_backlight_state
+        set_backlight = self.writer.set_backlight
+        backlight_event = BoolEvent(get_backlight, set_backlight)
+
+        bl_name = "Backlight"
+        bl_item = self.get_menu_item()
+
+        option = ToggleOptionEvent(bl_name, bl_item, backlight_event)
+        return option
+
+    def get_tick_option(self) -> RangeOptionEvent:
+        get_tickrate = self.tickrate.get_tickrate
+        set_tickrate = self.tickrate.set_tickrate
+        tick_event = IntEvent(get_tickrate, set_tickrate)
+
+        tick_name = "Tickrate"
+        tick_item = self.get_menu_item()
+        tick_step = 5
+        tick_min_range = 10
+        tick_max_range = 90
+
+        tick_option = RangeOptionEvent(
+            tick_name,
+            tick_item,
+            tick_event,
+            tick_step,
+            tick_min_range,
+            tick_max_range,
+        )
+        return tick_option
+
+    def get_time_option(self) -> TimeOption:
+        time_name = "Time"
+        time_item = self.get_menu_item()
+        time_option = TimeOption(time_name, time_item)
+        return time_option
+
+    def get_types_option(self) -> ListOption:
+        test_name = "Types"
+        test_item = self.get_menu_item()
+        test_list = ["Example", "Long String Test", "End"]
+        types_option = ListOption(test_name, test_item, test_list)
+        return types_option
+
+    def get_heads(self) -> list[OptionABC]:
+        backlight_option = self.get_backlight_option()
+        tick_option = self.get_tick_option()
+        time_option = self.get_time_option()
+        types_option = self.get_types_option()
+
+        heads: list[OptionABC] = [
+            backlight_option,
+            tick_option,
+            time_option,
+            types_option,
+        ]
+        return heads
+
+    def get_submenus(self, heads: list[OptionABC]) -> list[OrdDict]:
+        submenus = [OrdDict()] * len(heads)
+        return submenus
+
+    def get_menu(self) -> OrdDict[OptionABC, OrdDict]:
+        heads = self.get_heads()
+        submenus = self.get_submenus(heads)
+        menu = MenuCreator(heads, submenus).create()
+        return menu
 
 
 class DeviceMenu:
@@ -66,7 +190,7 @@ class DeviceInfoMenu:
         columns = self.lcd_config.lcd_columns
         return MenuItem(columns)
 
-    def get_info_menu(self) -> dict[OptionABC, dict]:
+    def get_info_menu(self) -> OrdDict[OptionABC, OrdDict]:
         _gpio = self.device_menu.get_gpio_mode()
         _pin = self.device_menu.get_pin()
         _type = self.device_menu.get_type()
@@ -83,7 +207,7 @@ class DeviceInfoMenu:
         ctrl_option = StaticOption(ctrl_name, self.get_menu_item())
 
         heads: list[OptionABC] = [gpio_option, pin_option, type_option, ctrl_option]
-        submenus = [{}] * len(heads)
+        submenus = [OrdDict()] * len(heads)
         submenu = MenuCreator(heads, submenus).create()
 
         control_option = StaticOption("Info", self.get_menu_item())
@@ -103,10 +227,10 @@ class DeviceControlMenu:
         columns = self.lcd_config.lcd_columns
         return MenuItem(columns)
 
-    def get_scheduled_control(self) -> dict[OptionABC, dict]:
+    def get_scheduled_control(self) -> OrdDict[OptionABC, OrdDict]:
         gpio_state = StaticOption("[Add Schedule]", self.get_menu_item())
         heads: list[OptionABC] = [gpio_state]
-        submenus = [{}] * len(heads)
+        submenus = [OrdDict()] * len(heads)
         submenu = MenuCreator(heads, submenus).create()
 
         control_option = StaticOption("Control", self.get_menu_item())
@@ -115,15 +239,14 @@ class DeviceControlMenu:
         menu = MenuCreator(heads, submenus).create()
         return menu
 
-    def get_manual_control(self) -> dict[OptionABC, dict]:
-        # pin = self.device_menu.pin
-        # relay = RelayDevice(pin)
-        # self.devices.append(relay)
-        # event = BoolEvent(relay.get_state, relay.set_state)
-        # gpio_state = ToggleOptionEvent("GPIO", self.get_menu_item(), event)
-        gpio_state = ToggleOption("GPIO", self.get_menu_item())
+    def get_manual_control(self) -> OrdDict[OptionABC, OrdDict]:
+        pin = self.device_menu.pin
+        relay = RelayDevice(pin)
+        self.devices.append(relay)
+        event = BoolEvent(relay.get_state, relay.set_state)
+        gpio_state = ToggleOptionEvent("GPIO", self.get_menu_item(), event)
         heads: list[OptionABC] = [gpio_state]
-        submenus = [{}] * len(heads)
+        submenus = [OrdDict()] * len(heads)
         submenu = MenuCreator(heads, submenus).create()
 
         control_option = StaticOption("Control", self.get_menu_item())
@@ -132,7 +255,7 @@ class DeviceControlMenu:
         menu = MenuCreator(heads, submenus).create()
         return menu
 
-    def get_control_menu(self) -> dict[OptionABC, dict]:
+    def get_control_menu(self) -> OrdDict[OptionABC, OrdDict]:
         control = self.device_menu.get_control()
         if control == "Manual":
             menu = self.get_manual_control()
@@ -145,7 +268,7 @@ class AddDeviceMenuBase:
     def __init__(self, lcd_config: LCDConfigABC):
         self._lcd_config = lcd_config
         self._device_menu = DeviceMenu()
-        self._add_device_submenu = {}
+        self._add_device_submenu = OrdDict()
         self._menu = self._get_menu()
 
     def _get_menu_item(self) -> MenuItem:
@@ -206,7 +329,7 @@ class AddDeviceMenuBase:
     def _delete_device(self, device_option: OptionABC):
         self._menu.pop(device_option)
 
-    def _create_new_device(self) -> dict[OptionABC, dict]:
+    def _create_new_device(self) -> OrdDict[OptionABC, OrdDict]:
         pin = self._device_menu.get_pin()
         name = f"Device ({pin})"
         menu_item = self._get_menu_item()
@@ -217,7 +340,7 @@ class AddDeviceMenuBase:
 
         info_menu = device_info.get_info_menu()
         control_menu = device_control.get_control_menu()
-        submenus = {**info_menu, **control_menu}
+        submenus = OrdDict(list(info_menu.items()) + list(control_menu.items()))
 
         heads: list[OptionABC] = [option]
         submenus = [submenus]
@@ -253,17 +376,17 @@ class AddDeviceMenuBase:
         ]
         return heads
 
-    def _get_submenus(self, heads: list[OptionABC]) -> list[dict]:
-        submenus = [{}] * len(heads)
+    def _get_submenus(self, heads: list[OptionABC]) -> list[OrdDict]:
+        submenus = [OrdDict()] * len(heads)
         return submenus
 
-    def _get_add_device_menu(self) -> dict[OptionABC, dict]:
+    def _get_add_device_menu(self) -> OrdDict[OptionABC, OrdDict]:
         heads = self._get_heads()
         submenus = self._get_submenus(heads)
         menu = MenuCreator(heads, submenus).create()
         return menu
 
-    def _get_menu(self) -> dict[OptionABC, dict]:
+    def _get_menu(self) -> OrdDict[OptionABC, OrdDict]:
         add_device = self._get_add_device_option()
         heads: list[OptionABC] = [add_device]
         submenus = [self._add_device_submenu]
@@ -275,5 +398,59 @@ class AddDeviceMenu(AddDeviceMenuBase):
     def __init__(self, lcd_config: LCDConfigABC):
         super().__init__(lcd_config)
 
-    def get_menu(self) -> dict[OptionABC, dict]:
+    def get_menu(self) -> OrdDict[OptionABC, OrdDict]:
         return self._menu
+
+
+class MainMenu:
+    def __init__(
+        self,
+        writer: WriterABC,
+        lcd_config: LCDConfigABC,
+        tickrate: Tickrate,
+    ):
+        self.writer = writer
+        self.lcd_config = lcd_config
+        self.tickrate = tickrate
+
+    def get_menu_item(self) -> MenuItem:
+        columns = self.lcd_config.lcd_columns
+        return MenuItem(columns)
+
+    def get_heads(self) -> list[OptionABC]:
+        devices = StaticOption("Devices", self.get_menu_item())
+        config = StaticOption("Configuration", self.get_menu_item())
+        system_info = StaticOption("System Info", self.get_menu_item())
+
+        heads: list[OptionABC] = [
+            devices,
+            config,
+            system_info,
+        ]
+        return heads
+
+    def get_submenus(self) -> list[OrdDict]:
+        devices_menu = AddDeviceMenu(self.lcd_config)
+        config_menu = ConfigurationMenu(
+            self.writer,
+            self.lcd_config,
+            self.tickrate,
+        )
+        system_menu = SystemInfoMenu(self.lcd_config)
+
+        submenus: list[OrdDict] = [
+            devices_menu.get_menu(),
+            config_menu.get_menu(),
+            system_menu.get_menu(),
+        ]
+        return submenus
+
+    def get_menu(self) -> OrdDict[OptionABC, OrdDict]:
+        heads = self.get_heads()
+        submenus = self.get_submenus()
+        menu = MenuCreator(heads, submenus).create()
+        return menu
+
+
+
+

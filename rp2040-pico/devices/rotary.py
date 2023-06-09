@@ -1,5 +1,5 @@
-from wgpio import GPIOInput
-from typing import Optional, Literal
+from wgpio import InputGPIO
+from std.typing import Optional, Literal
 
 
 class RotaryEncoderBase:
@@ -14,8 +14,8 @@ class RotaryEncoderBase:
         self._bp_state = 1
         self._swp_state = 1
 
-    def _register_pin(self, pin: int) -> GPIOInput:
-        gpio = GPIOInput(pin)
+    def _register_pin(self, pin: int) -> InputGPIO:
+        gpio = InputGPIO(pin)
         return gpio
 
 

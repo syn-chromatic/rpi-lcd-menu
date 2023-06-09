@@ -1,4 +1,4 @@
-from lcd.i2c import I2CLCD
+from lcd.api import LCDAPI
 from time import sleep
 
 from writers.abstracts import WriterABC
@@ -10,12 +10,12 @@ class LCDWriterBase(WriterABC):
     def __init__(self, rows: int, columns: int):
         self._rows = rows
         self._columns = columns
-        self._lcd = self._get_lcd()
+        self._lcd_api = self._get_lcd_api()
         self._row_states: list[int] = [0] * rows
         self._row_data: list[list[CharABC]] = [[]] * rows
 
-    def _get_lcd(self) -> I2CLCD:
-        lcd = I2CLCD(1, 0x27, self._rows, self._columns)
+    def _get_lcd_api(self) -> LCDAPI:
+        lcd = LCDAPI(1, 0x27, self._rows, self._columns)
         return lcd
 
     def _set_row_state(self, chars: list[CharABC], row: int):
@@ -48,15 +48,15 @@ class LCDWriterBase(WriterABC):
 
     def _write_char(self, char: CharABC, column: int, row: int):
         if isinstance(char, ASCIICharABC):
-            self._lcd.move_to(column, row)
+            self._lcd_api.move_to(column, row)
             value = char.get_value()
-            self._lcd.putchar(value)
+            self._lcd_api.put_character_code(value)
             return
 
         elif isinstance(char, ByteCharABC):
-            self._lcd.move_to(column, row)
+            self._lcd_api.move_to(column, row)
             value = char.get_value()
-            self._lcd.putchar(value)
+            self._lcd_api.put_character_code(value)
             return
 
         raise NotImplementedError(f"Not Implemented: {char}")
@@ -70,19 +70,19 @@ class LCDWriterBase(WriterABC):
         for char, column in changes:
             self._write_char(char, column, row)
 
-        self._lcd.move_to(len_chars, row)
+        self._lcd_api.move_to(len_chars, row)
         self._insert_row_data(segment, row)
         self._set_row_state(segment, row)
 
     def _write_with_cursor(self, chars: list[list[CharABC]], hold_time: float):
-        self._lcd.blink_cursor_on()
+        self._lcd_api.blink_cursor_on()
         for idx, segment in enumerate(chars):
             self._write_row(segment, idx)
         sleep(hold_time)
-        self._lcd.blink_cursor_off()
+        self._lcd_api.blink_cursor_off()
 
     def _write(self, chars: list[list[CharABC]], hold_time: float):
-        self._lcd.hide_cursor()
+        self._lcd_api.hide_cursor()
         for idx, segment in enumerate(chars):
             self._write_row(segment, idx)
         sleep(hold_time)
@@ -100,9 +100,9 @@ class LCDWriter(LCDWriterBase):
 
     def set_backlight(self, backlight_bool: bool):
         if backlight_bool:
-            self._lcd.backlight_on()
+            self._lcd_api.backlight_on()
             return
-        self._lcd.backlight_off()
+        self._lcd_api.backlight_off()
 
     def get_backlight_state(self) -> bool:
-        return self._lcd.backlight
+        return self._lcd_api.get_backlight_state()

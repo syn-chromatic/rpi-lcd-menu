@@ -1,6 +1,7 @@
 try:
+    raise Exception()
     import pigpio
-    from .gpio import GPIOInput, GPIOI2C
+    from .gpio import InputGPIO, OutputGPIO, I2CGPIO
 
     if not pigpio.pi().connected:
         raise Exception(
@@ -8,12 +9,12 @@ try:
             "fallback to Dummy GPIO for development."
         )
 
-    __all__ = ["GPIOInput", "GPIOI2C"]
+    __all__ = ["InputGPIO", "OutputGPIO", "I2CGPIO"]
 
 except Exception as error:
     import logging
-    from .dummyio import GPIOInput, GPIOI2C
+    from .dummyio import InputGPIO, OutputGPIO, I2CGPIO
 
     logging.critical(error)
 
-    __all__ = ["GPIOInput", "GPIOI2C"]
+    __all__ = ["InputGPIO", "OutputGPIO", "I2CGPIO"]

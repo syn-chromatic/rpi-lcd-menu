@@ -1,20 +1,8 @@
 import time
+from wgpio import I2CGPIO
 
 
 class LCDAPI:
-    """Implements the API for talking with HD44780 compatible character LCDs.
-    This class only knows what commands to send to the LCD, and not how to get
-    them to the LCD.
-
-    It is expected that a derived class will implement the hal_xxx functions.
-    """
-
-    # The following constant names were lifted from the avrlib lcd.h
-    # header file, however, I changed the definitions from bit numbers
-    # to bit masks.
-    #
-    # HD44780 LCD controller command set
-
     LCD_CLR = 0x01  # DB0: clear display
     LCD_HOME = 0x02  # DB1: return to home position
 
@@ -32,6 +20,7 @@ class LCDAPI:
     LCD_MOVE_RIGHT = 0x04  # --DB2: move right (0-> left)
 
     LCD_FUNCTION = 0x20  # DB5: function set
+
     LCD_FUNCTION_8BIT = 0x10  # --DB4: set 8BIT mode (0->4BIT mode)
     LCD_FUNCTION_2LINES = 0x08  # --DB3: two lines (0->one line)
     LCD_FUNCTION_10DOTS = 0x04  # --DB2: 5x10 font (0->5x7 font)
@@ -46,41 +35,66 @@ class LCDAPI:
     LCD_RW_WRITE = 0
     LCD_RW_READ = 1
 
-    def __init__(self, rows: int, columns: int):
+    # I2C expander pin configuration
+    EN = 0x04  # Enable bit
+    RW = 0x02  # Read/Write bit
+    RS = 0x01  # Register select bit
+    BACKLIGHT = 0x08  # Backlight bit
+
+    def __init__(self, bus: int, address: int, rows: int, columns: int):
         self.rows = rows
         self.columns = columns
+        self.gpio = I2CGPIO(bus, address)
         self.cursor_x = 0
         self.cursor_y = 0
         self.implied_newline = False
         self.backlight = True
+        self.initialize_display()
+
+    def initialize_display(self):
         self.display_off()
         self.backlight_on()
         self.clear()
-        self.hal_write_command(self.LCD_ENTRY_MODE | self.LCD_ENTRY_INC)
+        self.initialize_4bit_mode()
+        self.set_entry_mode()
         self.hide_cursor()
         self.display_on()
 
+    def initialize_4bit_mode(self):
+        self.hal_send_bytes(0x03, mode=0)
+        self.hal_pulse_enable(0x03)
+        self.hal_sleep_us(4500)
+
+        self.hal_send_bytes(0x03, mode=0)
+        self.hal_pulse_enable(0x03)
+        self.hal_sleep_us(4500)
+
+        self.hal_send_bytes(0x03, mode=0)
+        self.hal_pulse_enable(0x03)
+        self.hal_sleep_us(150)
+
+        self.hal_send_bytes(0x02, mode=0)  # Set 4-bit mode
+        self.hal_pulse_enable(0x02)
+        self.hal_write_command(self.LCD_FUNCTION | self.LCD_FUNCTION_2LINES)
+
+    def set_entry_mode(self):
+        self.hal_write_command(self.LCD_ENTRY_MODE | self.LCD_ENTRY_INC)
+
     def clear(self):
-        """Clears the LCD display and moves the cursor to the top left
-        corner.
-        """
         self.hal_write_command(self.LCD_CLR)
         self.hal_write_command(self.LCD_HOME)
         self.cursor_x = 0
         self.cursor_y = 0
 
     def show_cursor(self):
-        """Causes the cursor to be made visible."""
         self.hal_write_command(
             self.LCD_ON_CTRL | self.LCD_ON_DISPLAY | self.LCD_ON_CURSOR
         )
 
     def hide_cursor(self):
-        """Causes the cursor to be hidden."""
         self.hal_write_command(self.LCD_ON_CTRL | self.LCD_ON_DISPLAY)
 
     def blink_cursor_on(self):
-        """Turns on the cursor, and makes it blink."""
         self.hal_write_command(
             self.LCD_ON_CTRL
             | self.LCD_ON_DISPLAY
@@ -89,41 +103,28 @@ class LCDAPI:
         )
 
     def blink_cursor_off(self):
-        """Turns on the cursor, and makes it no blink (i.e. be solid)."""
         self.hal_write_command(
             self.LCD_ON_CTRL | self.LCD_ON_DISPLAY | self.LCD_ON_CURSOR
         )
 
     def display_on(self):
-        """Turns on (i.e. unblanks) the LCD."""
         self.hal_write_command(self.LCD_ON_CTRL | self.LCD_ON_DISPLAY)
 
     def display_off(self):
-        """Turns off (i.e. blanks) the LCD."""
         self.hal_write_command(self.LCD_ON_CTRL)
 
     def backlight_on(self):
-        """Turns the backlight on.
-
-        This isn't really an LCD command, but some modules have backlight
-        controls, so this allows the hal to pass through the command.
-        """
         self.backlight = True
         self.hal_backlight_on()
 
     def backlight_off(self):
-        """Turns the backlight off.
-
-        This isn't really an LCD command, but some modules have backlight
-        controls, so this allows the hal to pass through the command.
-        """
         self.backlight = False
         self.hal_backlight_off()
 
-    def move_to(self, cursor_x, cursor_y):
-        """Moves the cursor position to the indicated position. The cursor
-        position is zero based (i.e. cursor_x == 0 indicates first column).
-        """
+    def get_backlight_state(self) -> bool:
+        return self.backlight
+
+    def move_to(self, cursor_x: int, cursor_y: int):
         self.cursor_x = cursor_x
         self.cursor_y = cursor_y
         addr = cursor_x & 0x3F
@@ -133,43 +134,38 @@ class LCDAPI:
             addr += self.columns
         self.hal_write_command(self.LCD_DDRAM | addr)
 
-    def _handle_new_line(self):
+    def handle_new_line(self):
         if self.implied_newline:
             self.implied_newline = False
             return
         self.cursor_x = self.columns
 
-    def putchar(self, char):
-        """Writes the indicated character to the LCD at the current cursor
-        position, and advances the cursor by one position.
-        """
-        if char == "\n":
-            self._handle_new_line()
+    def put_character_code(self, char_code: int):
+        if char_code == 10:
+            self.handle_new_line()
         else:
-            self.hal_write_data(ord(char))
+            self.hal_write_data(char_code)
             self.cursor_x += 1
 
         if self.cursor_x >= self.columns:
             self.cursor_x = 0
             self.cursor_y += 1
-            self.implied_newline = char != "\n"
+            self.implied_newline = char_code != 10
 
         if self.cursor_y >= self.rows:
             self.cursor_y = 0
 
         self.move_to(self.cursor_x, self.cursor_y)
 
-    def putstr(self, string):
-        """Write the indicated string to the LCD at the current cursor
-        position and advances the cursor position appropriately.
-        """
-        for char in string:
-            self.putchar(char)
+    def put_character(self, char: str):
+        char_code = ord(char)
+        self.put_character_code(char_code)
 
-    def custom_char(self, location, charmap):
-        """Write a character to one of the 8 CGRAM locations, available
-        as chr(0) through chr(7).
-        """
+    def put_string(self, string: str):
+        for char in string:
+            self.put_character(char)
+
+    def put_custom_char(self, location: int, charmap: list[int]) -> None:
         location &= 0x7
         self.hal_write_command(self.LCD_CGRAM | (location << 3))
         self.hal_sleep_us(40)
@@ -179,38 +175,39 @@ class LCDAPI:
         self.move_to(self.cursor_x, self.cursor_y)
 
     def hal_backlight_on(self):
-        """Allows the hal layer to turn the backlight on.
-
-        If desired, a derived HAL class will implement this function.
-        """
-        pass
+        self.BACKLIGHT = 0x08
+        self.gpio.write_device([self.BACKLIGHT])
 
     def hal_backlight_off(self):
-        """Allows the hal layer to turn the backlight off.
-
-        If desired, a derived HAL class will implement this function.
-        """
-        pass
+        self.BACKLIGHT = 0x00
+        self.gpio.write_device([self.BACKLIGHT])
 
     def hal_write_command(self, cmd):
-        """Write a command to the LCD.
-
-        It is expected that a derived HAL class will implement this
-        function.
-        """
-        raise NotImplementedError
+        self.hal_send_bytes(cmd, mode=0)
 
     def hal_write_data(self, data):
-        """Write data to the LCD.
+        self.hal_send_bytes(data, mode=self.RS)
 
-        It is expected that a derived HAL class will implement this
-        function.
-        """
-        raise NotImplementedError
+    def hal_send_bytes(self, data: int, mode: int):
+        high_bits = mode | (data & 0xF0) | self.BACKLIGHT
+        low_bits = mode | ((data << 4) & 0xF0) | self.BACKLIGHT
+
+        # Write high 4-bits
+        self.gpio.write_device([high_bits])
+        self.hal_pulse_enable(high_bits)
+
+        # Write low 4-bits
+        self.gpio.write_device([low_bits])
+        self.hal_pulse_enable(low_bits)
+
+    def hal_pulse_enable(self, data):
+        self.gpio.write_device([data | self.EN])
+        # self.hal_sleep_us(1)
+        self.gpio.write_device([data & ~self.EN])
+        # self.hal_sleep_us(50)
 
     @staticmethod
     def hal_sleep_us(microseconds: int):
-        """Sleep for some time (given in microseconds)."""
         time.sleep(microseconds / 1_000_000)
 
     @staticmethod

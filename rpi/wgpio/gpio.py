@@ -1,7 +1,7 @@
 import pigpio
 
 
-class GPIOInputBase:
+class InputGPIOBase:
     def __init__(self, pin: int):
         self._pi = pigpio.pi()
         self._pin = pin
@@ -10,7 +10,7 @@ class GPIOInputBase:
         self._pi.set_mode(self._pin, pigpio.INPUT)
 
 
-class GPIOInput(GPIOInputBase):
+class InputGPIO(InputGPIOBase):
     def __init__(self, pin: int):
         super().__init__(pin)
 
@@ -27,7 +27,25 @@ class GPIOInput(GPIOInputBase):
         return self._pi.read(self._pin)
 
 
-class GPIOI2CBase:
+class OutputGPIOBase:
+    def __init__(self, pin: int):
+        self._pi = pigpio.pi()
+        self._pin = pin
+        self._setup_output_mode()
+
+    def _setup_output_mode(self):
+        self._pi.set_mode(self._pin, pigpio.OUTPUT)
+
+
+class OutputGPIO(OutputGPIOBase):
+    def __init__(self, pin: int):
+        super().__init__(pin)
+
+    def write(self, state: bool):
+        self._pi.write(self._pin, state)
+
+
+class I2CGPIOBase:
     def __init__(self, bus: int, address: int):
         self._pi = pigpio.pi()
         self._bus = bus
@@ -38,7 +56,7 @@ class GPIOI2CBase:
         return self._pi.i2c_open(self._bus, self._address)
 
 
-class GPIOI2C(GPIOI2CBase):
+class I2CGPIO(I2CGPIOBase):
     def __init__(self, bus: int, address: int):
         super().__init__(bus, address)
 

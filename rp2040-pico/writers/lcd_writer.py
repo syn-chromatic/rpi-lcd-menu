@@ -1,35 +1,39 @@
-from lcd.i2c import I2CLCD
+from lcd.api import LCDAPI
 from time import sleep
 
+from writers.abstracts import WriterABC
+from character.abstracts import CharABC, ASCIICharABC, ByteCharABC
+from character.chars import SpaceChar
 
-class LCDWriterBase:
+
+class LCDWriterBase(WriterABC):
     def __init__(self, rows: int, columns: int):
         self._rows = rows
         self._columns = columns
-        self._lcd = self._get_lcd()
+        self._lcd_api = self._get_lcd_api()
         self._row_states: list[int] = [0] * rows
-        self._row_data: list[list[str]] = [[]] * rows
+        self._row_data: list[list[CharABC]] = [[]] * rows
 
-    def _get_lcd(self) -> I2CLCD:
-        lcd = I2CLCD(0, 0x27, self._rows, self._columns)
+    def _get_lcd_api(self) -> LCDAPI:
+        lcd = LCDAPI(1, 0x27, self._rows, self._columns)
         return lcd
 
-    def _set_row_state(self, chars: list[str], row: int):
+    def _set_row_state(self, chars: list[CharABC], row: int):
         self._row_states[row] = len(chars)
 
-    def _fill_chars(self, chars: list[str], row: int):
+    def _fill_chars(self, chars: list[CharABC], row: int):
         row_state = self._row_states[row]
         fill = row_state - len(chars)
         if fill > 0:
             for _ in range(fill):
-                chars.append(" ")
+                chars.append(SpaceChar())
 
-    def _insert_row_data(self, chars: list[str], row: int):
+    def _insert_row_data(self, chars: list[CharABC], row: int):
         self._row_data[row] = chars
 
-    def _get_string_changes(
-        self, chars: list[str], prev_chars: list[str]
-    ) -> list[tuple[str, int]]:
+    def _get_char_changes(
+        self, chars: list[CharABC], prev_chars: list[CharABC]
+    ) -> list[tuple[CharABC, int]]:
         changes = []
         max_idx = len(prev_chars) - 1
         for idx in range(len(chars)):
@@ -42,58 +46,44 @@ class LCDWriterBase:
             changes.append((char1, idx))
         return changes
 
-    def _write_row(self, chars: list[str], row: int):
-        len_chars = len(chars)
+    def _write_char(self, char: CharABC, column: int, row: int):
+        if isinstance(char, ASCIICharABC):
+            self._lcd_api.move_to(column, row)
+            value = char.get_value()
+            self._lcd_api.put_character_code(value)
+            return
+
+        elif isinstance(char, ByteCharABC):
+            self._lcd_api.move_to(column, row)
+            value = char.get_value()
+            self._lcd_api.put_character_code(value)
+            return
+
+        raise NotImplementedError(f"Not Implemented: {char}")
+
+    def _write_row(self, segment: list[CharABC], row: int):
+        len_chars = len(segment)
         prev_chars = self._row_data[row]
-        self._fill_chars(chars, row)
-        changes = self._get_string_changes(chars, prev_chars)
+        self._fill_chars(segment, row)
+        changes = self._get_char_changes(segment, prev_chars)
 
         for char, column in changes:
-            self._validate_column(column)
-            self._lcd.move_to(column, row)
-            self._lcd.putchar(char)
+            self._write_char(char, column, row)
 
-        self._lcd.move_to(len_chars, row)
-        self._insert_row_data(chars, row)
-        self._set_row_state(chars, row)
+        self._lcd_api.move_to(len_chars, row)
+        self._insert_row_data(segment, row)
+        self._set_row_state(segment, row)
 
-    def _seg_string(self, string: str) -> list[list[str]]:
-        segments = []
-        line = []
-        for char in string:
-            if char == "\n" and line:
-                segments.append(line)
-                line = []
-                continue
-            line.append(char)
-        return segments
-
-    def _validate_segments(self, segments: list[list[str]]):
-        if self._rows > len(segments):
-            error = "Data passed to LCDWriter exceeds LCD Rows:\n{}"
-            error = error.format(segments)
-            raise Exception(error)
-
-    def _validate_column(self, idx: int):
-        if idx >= self._columns:
-            error = "Data passed to LCDWriter exceeds LCD Columns:\n{}"
-            error = error.format(idx)
-            raise Exception(error)
-
-    def _write_with_cursor(self, string: str, hold_time: float):
-        self._lcd.blink_cursor_on()
-        segments = self._seg_string(string)
-        self._validate_segments(segments)
-        for idx, segment in enumerate(segments):
+    def _write_with_cursor(self, chars: list[list[CharABC]], hold_time: float):
+        self._lcd_api.blink_cursor_on()
+        for idx, segment in enumerate(chars):
             self._write_row(segment, idx)
         sleep(hold_time)
-        self._lcd.blink_cursor_off()
+        self._lcd_api.blink_cursor_off()
 
-    def _write(self, string: str, hold_time: float):
-        self._lcd.hide_cursor()
-        segments = self._seg_string(string)
-        self._validate_segments(segments)
-        for idx, segment in enumerate(segments):
+    def _write(self, chars: list[list[CharABC]], hold_time: float):
+        self._lcd_api.hide_cursor()
+        for idx, segment in enumerate(chars):
             self._write_row(segment, idx)
         sleep(hold_time)
 
@@ -102,14 +92,17 @@ class LCDWriter(LCDWriterBase):
     def __init__(self, rows: int, columns: int):
         super().__init__(rows, columns)
 
-    def write_with_cursor(self, string: str, hold_time: float):
-        self._write_with_cursor(string, hold_time)
+    def write_with_cursor(self, chars: list[list[CharABC]], hold_time: float):
+        self._write_with_cursor(chars, hold_time)
 
-    def write(self, string: str, hold_time: float):
-        self._write(string, hold_time)
+    def write(self, chars: list[list[CharABC]], hold_time: float):
+        self._write(chars, hold_time)
 
     def set_backlight(self, backlight_bool: bool):
         if backlight_bool:
-            self._lcd.backlight_on()
+            self._lcd_api.backlight_on()
             return
-        self._lcd.backlight_off()
+        self._lcd_api.backlight_off()
+
+    def get_backlight_state(self) -> bool:
+        return self._lcd_api.get_backlight_state()

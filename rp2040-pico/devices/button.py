@@ -1,4 +1,4 @@
-from wgpio import GPIOInput
+from wgpio import InputGPIO
 
 
 class Button:
@@ -8,8 +8,8 @@ class Button:
         self.state = 1
         self.p_state = 1
 
-    def register_pin(self) -> GPIOInput:
-        gpio = GPIOInput(self.bcm_pin)
+    def register_pin(self) -> InputGPIO:
+        gpio = InputGPIO(self.bcm_pin)
         gpio.set_pull_up()
         return gpio
 

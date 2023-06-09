@@ -160,7 +160,7 @@ class AddDeviceMenuBase:
     def _get_add_device_option(self) -> ActionOptionEvent:
         name = "[Add Device]"
         menu_item = self._get_menu_item()
-        event = ActionEvent(self._set_add_device_submenu)
+        event = ActionEvent(self._set_add_device_submenu)  # type: ignore
         option = ActionOptionEvent(name, menu_item, event)
         return option
 
@@ -170,7 +170,7 @@ class AddDeviceMenuBase:
         menu_item = self._get_menu_item()
         get_gpio = self._device_menu.get_gpio_mode
         set_gpio = self._device_menu.set_gpio_mode
-        event = StrEvent(get_gpio, set_gpio)
+        event = StrEvent(get_gpio, set_gpio)  # type: ignore
         option = ListOptionEvent(name, menu_item, event, item_list)
         return option
 
@@ -179,7 +179,7 @@ class AddDeviceMenuBase:
         menu_item = self._get_menu_item()
         get_pin = self._device_menu.get_pin
         set_pin = self._device_menu.set_pin
-        event = IntEvent(get_pin, set_pin)
+        event = IntEvent(get_pin, set_pin)  # type: ignore
         option = RangeOptionEvent(name, menu_item, event, 1, 0, 40)
         return option
 
@@ -189,7 +189,7 @@ class AddDeviceMenuBase:
         menu_item = self._get_menu_item()
         get_type = self._device_menu.get_type
         set_type = self._device_menu.set_type
-        event = StrEvent(get_type, set_type)
+        event = StrEvent(get_type, set_type)  # type: ignore
         option = ListOptionEvent(name, menu_item, event, item_list)
         return option
 
@@ -199,7 +199,7 @@ class AddDeviceMenuBase:
         menu_item = self._get_menu_item()
         get_control = self._device_menu.get_control
         set_control = self._device_menu.set_control
-        event = StrEvent(get_control, set_control)
+        event = StrEvent(get_control, set_control)  # type: ignore
         option = ListOptionEvent(name, menu_item, event, item_list)
         return option
 
@@ -233,7 +233,7 @@ class AddDeviceMenuBase:
         name = "[Confirm]"
         success_name = "[Added]"
         menu_item = self._get_menu_item()
-        event = ActionEvent(self._add_device_to_menu)
+        event = ActionEvent(self._add_device_to_menu)  # type: ignore
         option = SActionOptionEvent(name, success_name, menu_item, event)
         return option
 

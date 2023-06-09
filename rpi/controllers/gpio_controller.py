@@ -1,4 +1,4 @@
-from actuators.button import Button
+from devices.button import Button
 from configurations import CtrlConfigABC
 
 from typing import Callable

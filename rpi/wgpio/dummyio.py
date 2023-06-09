@@ -1,4 +1,4 @@
-class GPIOInput:
+class InputGPIO:
     def __init__(self, pin: int):
         pass
 
@@ -15,7 +15,15 @@ class GPIOInput:
         return 1
 
 
-class GPIOI2C:
+class OutputGPIO:
+    def __init__(self, pin: int):
+        pass
+
+    def write(self, state: bool):
+        pass
+
+
+class I2CGPIO:
     def __init__(self, bus: int, address: int):
         pass
 

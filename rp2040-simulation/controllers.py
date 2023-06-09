@@ -1,13 +1,15 @@
-from button import Button
+from devices import Button
+from configurations import CtrlConfigABC
+
 from typing import Callable
 
 
 class ControllerBase:
-    def __init__(self, back_pin: int, prev_pin: int, next_pin: int, apply_pin: int):
-        self._back_button = self._register_button(back_pin)
-        self._prev_button = self._register_button(prev_pin)
-        self._next_button = self._register_button(next_pin)
-        self._apply_button = self._register_button(apply_pin)
+    def __init__(self, ctrl_config: CtrlConfigABC):
+        self._back_button = self._register_button(ctrl_config.back_pin)
+        self._prev_button = self._register_button(ctrl_config.prev_pin)
+        self._next_button = self._register_button(ctrl_config.next_pin)
+        self._apply_button = self._register_button(ctrl_config.apply_pin)
         self._back_callback = None
         self._prev_callback = None
         self._next_callback = None
@@ -34,8 +36,8 @@ class ControllerBase:
 
 
 class Controller(ControllerBase):
-    def __init__(self, back_pin: int, prev_pin: int, next_pin: int, apply_pin: int):
-        super().__init__(back_pin, prev_pin, next_pin, apply_pin)
+    def __init__(self, ctrl_config: CtrlConfigABC):
+        super().__init__(ctrl_config)
 
     def register_back_callback(self, callback: Callable):
         self._back_callback = callback

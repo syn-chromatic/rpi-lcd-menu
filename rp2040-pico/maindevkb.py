@@ -1,47 +1,44 @@
-import gc
 import time
 
-from options import OptionABC
-from coordinator import MenuCoordinator
-from lcdwriter import LCDWriter
-from controllers import Controller
+from options.abstracts import OptionABC
+from menu.coordinator import MenuCoordinator
+from writers.console_writer import ConsoleWriter
+from controllers.kb_controller import KBController
 
-from configurations import CtrlConfigABC, LCDConfigABC
-from configurations import CtrlConfig, LCD2004Config
+from configurations import KBCtrlConfigABC, LCDConfigABC
+from configurations import KBCtrlConfig, LCD2004Config
 
-from tickrate import Tickrate
-from menu_setups import MainMenu
-
-from collections import OrderedDict as OrdDict
+from menu.tickrate import Tickrate
+from menu.setups.default.main import MainMenu
 
 
 class MenuHandler:
-    def __init__(self, ctrl_config: CtrlConfigABC, lcd_config: LCDConfigABC):
+    def __init__(self, ctrl_config: KBCtrlConfigABC, lcd_config: LCDConfigABC):
         self.tick_rate = Tickrate(40)
         self.ctrl_config = ctrl_config
         self.lcd_config = lcd_config
-        self.writer = self.get_lcd_writer()
+        self.writer = self.get_console_writer()
         self.main_menu = self.get_main_menu()
         self.menu_coord = self.get_menu_coord()
-        self.controller = self.get_controller()
+        self.controller = self.get_kb_controller()
 
-    def get_controller(self) -> Controller:
-        controller = Controller(self.ctrl_config)
-        controller.register_back_callback(self.back_option)
-        controller.register_prev_callback(self.decrement_option)
-        controller.register_next_callback(self.increment_option)
-        controller.register_apply_callback(self.apply_option)
+    def get_kb_controller(self) -> KBController:
+        controller = KBController(self.ctrl_config)
+        controller.register_back_callback(self.back_option) # type: ignore
+        controller.register_prev_callback(self.decrement_option) # type: ignore
+        controller.register_next_callback(self.increment_option) # type: ignore
+        controller.register_apply_callback(self.apply_option) # type: ignore
         return controller
 
-    def get_main_menu(self) -> OrdDict[OptionABC, OrdDict]:
+    def get_main_menu(self) -> dict[OptionABC, dict]:
         main_menu = MainMenu(self.writer, self.lcd_config, self.tick_rate)
         menu = main_menu.get_menu()
         return menu
 
-    def get_lcd_writer(self) -> LCDWriter:
+    def get_console_writer(self) -> ConsoleWriter:
         rows = self.lcd_config.lcd_rows
         columns = self.lcd_config.lcd_columns
-        writer = LCDWriter(rows, columns)
+        writer = ConsoleWriter(rows, columns)
         return writer
 
     def get_menu_coord(self) -> MenuCoordinator:
@@ -85,13 +82,12 @@ class MenuHandler:
             if counter >= self.tick_rate.get_tickrate():
                 self.update_options()
                 counter = 0
-                gc.collect()
 
             time.sleep(0.01)
 
 
 if __name__ == "__main__":
-    ctrl_config = CtrlConfig()
+    ctrl_config = KBCtrlConfig()
     lcd_config = LCD2004Config()
 
     menu_handler = MenuHandler(ctrl_config, lcd_config)

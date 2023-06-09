@@ -1,22 +1,19 @@
-from devices.button import Button
-from configurations import CtrlConfigABC
+from configurations import KBCtrlConfigABC
+from msvcrt import getch, kbhit
 
 from std.typing import Callable
 
 
-class ControllerBase:
-    def __init__(self, ctrl_config: CtrlConfigABC):
-        self._back_button = self._register_button(ctrl_config.back_pin)
-        self._prev_button = self._register_button(ctrl_config.prev_pin)
-        self._next_button = self._register_button(ctrl_config.next_pin)
-        self._apply_button = self._register_button(ctrl_config.apply_pin)
+class KBControllerBase:
+    def __init__(self, ctrl_config: KBCtrlConfigABC):
+        self._back_key = ctrl_config.back_key
+        self._prev_key = ctrl_config.prev_key
+        self._next_key = ctrl_config.next_key
+        self._apply_key = ctrl_config.apply_key
         self._back_callback = None
         self._prev_callback = None
         self._next_callback = None
         self._apply_callback = None
-
-    def _register_button(self, pin: int) -> Button:
-        return Button(pin)
 
     def _execute_back_callback(self):
         if self._back_callback:
@@ -35,8 +32,8 @@ class ControllerBase:
             self._apply_callback()
 
 
-class Controller(ControllerBase):
-    def __init__(self, ctrl_config: CtrlConfigABC):
+class KBController(KBControllerBase):
+    def __init__(self, ctrl_config: KBCtrlConfigABC):
         super().__init__(ctrl_config)
 
     def register_back_callback(self, callback: Callable):
@@ -52,14 +49,17 @@ class Controller(ControllerBase):
         self._apply_callback = callback
 
     def check(self):
-        if self._back_button.is_pressed():
-            self._execute_back_callback()
+        if kbhit():
+            key = ord(getch())
 
-        if self._prev_button.is_pressed():
-            self._execute_prev_callback()
+            if key == self._back_key:
+                self._execute_back_callback()
 
-        if self._next_button.is_pressed():
-            self._execute_next_callback()
+            if key == self._prev_key:
+                self._execute_prev_callback()
 
-        if self._apply_button.is_pressed():
-            self._execute_apply_callback()
+            if key == self._next_key:
+                self._execute_next_callback()
+
+            if key == self._apply_key:
+                self._execute_apply_callback()

@@ -2,15 +2,15 @@ from abc import ABC, abstractmethod
 
 
 class CharABC(ABC):
-    def __init__(self, value: tuple[str] | list[int]):
-        self.value: tuple[str] | list[int] = value
+    def __init__(self, value: int | list[int]):
+        self.value: int | list[int] = value
 
     @abstractmethod
-    def get_value(self) -> str | list[int]:
+    def get_value(self) -> int | list[int]:
         pass
 
     @abstractmethod
-    def set_value(self, value: tuple[str] | list[int]):
+    def set_value(self, value: int | list[int]):
         pass
 
     def __eq__(self, other: object) -> bool:
@@ -25,37 +25,38 @@ class CharABC(ABC):
 
 
 class ASCIICharABC(CharABC):
-    def __init__(self, value: tuple[str]):
-        self.value: tuple[str] = value
+    def __init__(self, value: int):
+        self.value: int = value
 
     @abstractmethod
-    def get_value(self) -> str:
+    def get_value(self) -> int:
         pass
 
     @abstractmethod
-    def set_value(self, value: tuple[str]):
+    def set_value(self, value: int):
         pass
 
 
 class ByteCharABC(CharABC):
-    def __init__(self, char: tuple[str]):
-        self.value: tuple[str] = char
+    def __init__(self, char: int):
+        self.value: int = char
 
     @abstractmethod
-    def get_value(self) -> str:
+    def get_value(self) -> int:
         pass
 
     @abstractmethod
-    def set_value(self, value: tuple[str]):
+    def set_value(self, value: int):
         pass
 
     @abstractmethod
-    def get_unicode_value(self) -> str:
+    def get_unicode_value(self) -> int:
         pass
 
 
 class CustomCharABC(CharABC):
-    def __init__(self, value: list[int]):
+    def __init__(self, cgram: int, value: list[int]):
+        self.cgram: int = cgram
         self.value: list[int] = value
 
     @abstractmethod
@@ -67,68 +68,68 @@ class CustomCharABC(CharABC):
         pass
 
     @abstractmethod
-    def get_unicode_value(self) -> str:
+    def get_unicode_value(self) -> int:
         pass
 
 
 class ASCIIChar(ASCIICharABC):
-    def __init__(self, value: tuple[str] = tuple([""])):
-        self.value: tuple[str] = value
+    def __init__(self, value: int):
+        self.value = value
 
-    def get_value(self) -> str:
-        return self.value[0]
+    def get_value(self) -> int:
+        return self.value
 
-    def set_value(self, value: tuple[str]):
+    def set_value(self, value: int):
         self.value = value
 
 
 class SpaceChar(ASCIICharABC):
     def __init__(self):
-        self.value = tuple([" "])
+        self.value = ord(" ")
 
-    def get_value(self) -> str:
-        return self.value[0]
+    def get_value(self) -> int:
+        return self.value
 
-    def set_value(self, value: tuple[str]):
+    def set_value(self, value: int):
         self.value = value
 
 
 class RightAngleChar(ASCIICharABC):
     def __init__(self):
-        self.value = tuple([">"])
+        self.value = ord(">")
 
-    def get_value(self) -> str:
-        return self.value[0]
+    def get_value(self) -> int:
+        return self.value
 
-    def set_value(self, value: tuple[str]):
+    def set_value(self, value: int):
         self.value = value
 
 
 class LeftArrowChar(ByteCharABC):
     def __init__(self):
-        self.value = tuple(["\u007f"])
+        self.value = ord("\u007f")
 
-    def get_value(self) -> str:
-        return self.value[0]
+    def get_value(self) -> int:
+        return self.value
 
-    def get_unicode_value(self) -> str:
-        return "←"
+    def get_unicode_value(self) -> int:
+        return ord("←")
 
-    def set_value(self, value: tuple[str]):
+    def set_value(self, value: int):
         self.value = value
 
 
 class RightArrowChar(ByteCharABC):
     def __init__(self):
-        self.value = tuple(["\u007e"])
+        self.value = ord("\u007e")
 
-    def get_value(self) -> str:
-        return self.value[0]
+    def get_value(self) -> int:
+        return self.value
 
-    def get_unicode_value(self) -> str:
-        return "→"
+    def get_unicode_value(self) -> int:
+        return ord("→")
 
-    def set_value(self, value: tuple[str]):
+    def set_value(self, value: int):
         self.value = value
 
 
@@ -139,6 +140,6 @@ class CharArray:
     def get_ascii_char_array(self, string: str) -> list[CharABC]:
         char_array = []
         for ch_str in string:
-            ascii_char = ASCIIChar(tuple([ch_str]))
+            ascii_char = ASCIIChar(ord(ch_str))
             char_array.append(ascii_char)
         return char_array

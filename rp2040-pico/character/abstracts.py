@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from std.abc import ABC, abstractmethod
 
 
 class CharABC(ABC):
@@ -6,7 +6,7 @@ class CharABC(ABC):
         self.value: int | list[int] = value
 
     @abstractmethod
-    def get_value(self) -> int | list[int]:
+    def get_value(self) -> int | list[int]: # type: ignore
         pass
 
     @abstractmethod
@@ -29,7 +29,7 @@ class ASCIICharABC(CharABC):
         self.value: int = value
 
     @abstractmethod
-    def get_value(self) -> int:
+    def get_value(self) -> int: # type: ignore
         pass
 
     @abstractmethod
@@ -42,7 +42,7 @@ class ByteCharABC(CharABC):
         self.value: int = char
 
     @abstractmethod
-    def get_value(self) -> int:
+    def get_value(self) -> int: # type: ignore
         pass
 
     @abstractmethod
@@ -50,7 +50,7 @@ class ByteCharABC(CharABC):
         pass
 
     @abstractmethod
-    def get_unicode_value(self) -> int:
+    def get_unicode_value(self) -> int: # type: ignore
         pass
 
 
@@ -60,7 +60,7 @@ class CustomCharABC(CharABC):
         self.value: list[int] = value
 
     @abstractmethod
-    def get_value(self) -> list[int]:
+    def get_value(self) -> list[int]: # type: ignore
         pass
 
     @abstractmethod
@@ -68,5 +68,5 @@ class CustomCharABC(CharABC):
         pass
 
     @abstractmethod
-    def get_unicode_value(self) -> int:
+    def get_unicode_value(self) -> int: # type: ignore
         pass

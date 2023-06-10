@@ -13,6 +13,7 @@ from options import (
     ActionOptionEvent,
     ListOptionEvent,
     ToggleOptionEvent,
+    ToggleOption,
 )
 from options import IntEvent, StrEvent, ActionEvent
 from devices import RelayDevice
@@ -248,12 +249,12 @@ class DeviceControlMenu:
         return menu
 
     def get_manual_control(self) -> OrdDict[OptionABC, OrdDict]:
-        # pin = self.device_menu.pin
-        # relay = RelayDevice(pin)
-        # self.devices.append(relay)
-        # event = BoolEvent(relay.get_state, relay.set_state)
-        # gpio_state = ToggleOptionEvent("GPIO", self.get_menu_item(), event)
-        gpio_state = ToggleOption("GPIO", self.get_menu_item())
+        pin = self.device_menu.pin
+        relay = RelayDevice(pin)
+        self.devices.append(relay)
+        event = BoolEvent(relay.get_state, relay.set_state)
+        gpio_state = ToggleOptionEvent("GPIO", self.get_menu_item(), event)
+        # gpio_state = ToggleOption("GPIO", self.get_menu_item())
         heads: list[OptionABC] = [gpio_state]
         submenus = [OrdDict()] * len(heads)
         submenu = MenuCreator(heads, submenus).create()

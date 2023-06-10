@@ -1,7 +1,7 @@
 from devices import Button
 from configurations import CtrlConfigABC
 
-from typing import Callable
+from extensions import Callable
 
 
 class ControllerBase:

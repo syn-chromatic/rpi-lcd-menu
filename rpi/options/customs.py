@@ -127,7 +127,7 @@ class CPUFreqBase(OptionABC):
 
     @staticmethod
     def _get_cpu_freq() -> int:
-        freq = Processor().get_frequency()
+        freq = Processor().get_frequency_mhz()
         freq = int(freq)
         return freq
 

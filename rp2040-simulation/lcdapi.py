@@ -1,5 +1,5 @@
 import time
-from wgpio import I2CGPIO
+from extensions import I2CGPIO
 
 
 class LCDAPI:
@@ -202,9 +202,9 @@ class LCDAPI:
 
     def hal_pulse_enable(self, data):
         self.gpio.write_device([data | self.EN])
-        # self.hal_sleep_us(1)
+        self.hal_sleep_us(1)
         self.gpio.write_device([data & ~self.EN])
-        # self.hal_sleep_us(50)
+        self.hal_sleep_us(50)
 
     @staticmethod
     def hal_sleep_us(microseconds: int):

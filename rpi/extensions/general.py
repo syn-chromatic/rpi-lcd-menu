@@ -12,7 +12,7 @@ class Processor:
     def get_usage(self) -> float:
         return psutil.cpu_times_percent().user
 
-    def get_frequency(self) -> float:
+    def get_frequency_mhz(self) -> float:
         return psutil.cpu_freq().current
 
     def get_core_count(self) -> int:

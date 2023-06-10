@@ -2,6 +2,9 @@ from options import OptionABC
 from characters import CharABC
 from characters import SpaceChar
 
+from extensions import Optional
+
+# For interchangeable compatibility with MicroPython
 from collections import OrderedDict as OrdDict
 
 
@@ -77,7 +80,9 @@ class MenuCoordinatorBase:
             option.get_item().set_selected(False)
             option.get_item().reset()
 
-    def _get_option(self, options_list: list[OptionABC], idx: int):
+    def _get_option(
+        self, options_list: list[OptionABC], idx: int
+    ) -> Optional[OptionABC]:
         if len(options_list) > idx:
             return options_list[idx]
 

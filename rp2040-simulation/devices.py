@@ -1,4 +1,4 @@
-from wgpio import InputGPIO, OutputGPIO
+from extensions import InputGPIO, OutputGPIO
 
 
 class Button:

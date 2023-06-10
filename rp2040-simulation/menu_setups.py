@@ -19,8 +19,8 @@ from devices import RelayDevice
 from options import TimeOption, ListOption
 
 
-from options import MachineName, CPUFreq
-from options import MemoryFree, MemoryUsed
+from options import CPUArch, CPUPerc, CPUFreq, CPUCoreCount
+from options import MemoryTotal, MemoryFree, MemoryUsed, MemoryPerc
 
 from collections import OrderedDict as OrdDict
 
@@ -34,16 +34,24 @@ class SystemInfoMenu:
         return MenuItem(columns)
 
     def get_heads(self) -> list[OptionABC]:
-        machine_name = MachineName(self.get_menu_item())
+        cpu_arch = CPUArch(self.get_menu_item())
+        cpu_perc = CPUPerc(self.get_menu_item())
         cpu_freq = CPUFreq(self.get_menu_item())
+        cpu_cores = CPUCoreCount(self.get_menu_item())
+        mem_total = MemoryTotal(self.get_menu_item())
         mem_free = MemoryFree(self.get_menu_item())
         mem_used = MemoryUsed(self.get_menu_item())
+        mem_perc = MemoryPerc(self.get_menu_item())
 
         heads = [
-            machine_name,
+            cpu_arch,
+            cpu_perc,
             cpu_freq,
+            cpu_cores,
+            mem_total,
             mem_free,
             mem_used,
+            mem_perc,
         ]
         return heads
 
@@ -92,7 +100,7 @@ class ConfigurationMenu:
         tick_name = "Tickrate"
         tick_item = self.get_menu_item()
         tick_step = 5
-        tick_min_range = 10
+        tick_min_range = 0
         tick_max_range = 90
 
         tick_option = RangeOptionEvent(
@@ -240,11 +248,12 @@ class DeviceControlMenu:
         return menu
 
     def get_manual_control(self) -> OrdDict[OptionABC, OrdDict]:
-        pin = self.device_menu.pin
-        relay = RelayDevice(pin)
-        self.devices.append(relay)
-        event = BoolEvent(relay.get_state, relay.set_state)
-        gpio_state = ToggleOptionEvent("GPIO", self.get_menu_item(), event)
+        # pin = self.device_menu.pin
+        # relay = RelayDevice(pin)
+        # self.devices.append(relay)
+        # event = BoolEvent(relay.get_state, relay.set_state)
+        # gpio_state = ToggleOptionEvent("GPIO", self.get_menu_item(), event)
+        gpio_state = ToggleOption("GPIO", self.get_menu_item())
         heads: list[OptionABC] = [gpio_state]
         submenus = [OrdDict()] * len(heads)
         submenu = MenuCreator(heads, submenus).create()
@@ -450,7 +459,3 @@ class MainMenu:
         submenus = self.get_submenus()
         menu = MenuCreator(heads, submenus).create()
         return menu
-
-
-
-

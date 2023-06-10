@@ -1,7 +1,7 @@
 from configurations import KBCtrlConfigABC
 from msvcrt import getch, kbhit
 
-from typing import Callable
+from extensions.std.typing import Callable
 
 
 class KBControllerBase:

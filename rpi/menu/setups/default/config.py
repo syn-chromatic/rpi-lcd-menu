@@ -11,6 +11,9 @@ from options.item import MenuItem
 from options.utils import MenuCreator
 from options.events import BoolEvent, IntEvent
 
+# For interchangeable compatibility with MicroPython
+from collections import OrderedDict as OrdDict
+
 
 class ConfigurationMenu:
     def __init__(
@@ -46,7 +49,7 @@ class ConfigurationMenu:
         tick_name = "Tickrate"
         tick_item = self.get_menu_item()
         tick_step = 5
-        tick_min_range = 10
+        tick_min_range = 0
         tick_max_range = 90
 
         tick_option = RangeOptionEvent(
@@ -86,11 +89,11 @@ class ConfigurationMenu:
         ]
         return heads
 
-    def get_submenus(self, heads: list[OptionABC]) -> list[dict]:
-        submenus = [{}] * len(heads)
+    def get_submenus(self, heads: list[OptionABC]) -> list[OrdDict]:
+        submenus = [OrdDict()] * len(heads)
         return submenus
 
-    def get_menu(self) -> dict[OptionABC, dict]:
+    def get_menu(self) -> OrdDict[OptionABC, OrdDict]:
         heads = self.get_heads()
         submenus = self.get_submenus(heads)
         menu = MenuCreator(heads, submenus).create()

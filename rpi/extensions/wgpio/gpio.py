@@ -1,5 +1,8 @@
 import pigpio
 
+# For compatibility with MicroPython.
+# The MicroPython codebase will have its own implementation here.
+
 
 class InputGPIOBase:
     def __init__(self, pin: int):

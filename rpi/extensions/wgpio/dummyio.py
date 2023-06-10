@@ -1,3 +1,6 @@
+# Dummy GPIO for development testing.
+
+
 class InputGPIO:
     def __init__(self, pin: int):
         pass

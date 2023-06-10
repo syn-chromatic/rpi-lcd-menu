@@ -1,5 +1,5 @@
 import time
-from wgpio import I2CGPIO
+from extensions.wgpio import I2CGPIO
 
 
 class LCDAPI:

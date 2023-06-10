@@ -1,6 +1,6 @@
-from lcd.api import LCDAPI
 from time import sleep
 
+from lcd.api import LCDAPI
 from writers.abstracts import WriterABC
 from character.abstracts import CharABC, ASCIICharABC, ByteCharABC
 from character.chars import SpaceChar

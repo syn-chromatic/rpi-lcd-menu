@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from extensions.std.abc import ABC, abstractmethod
 from options.item import MenuItem
 
 from character.abstracts import CharABC

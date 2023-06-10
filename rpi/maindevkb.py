@@ -11,6 +11,9 @@ from configurations import KBCtrlConfig, LCD2004Config
 from menu.tickrate import Tickrate
 from menu.setups.default.main import MainMenu
 
+# For interchangeable compatibility with MicroPython
+from collections import OrderedDict as OrdDict
+
 
 class MenuHandler:
     def __init__(self, ctrl_config: KBCtrlConfigABC, lcd_config: LCDConfigABC):
@@ -30,7 +33,7 @@ class MenuHandler:
         controller.register_apply_callback(self.apply_option)
         return controller
 
-    def get_main_menu(self) -> dict[OptionABC, dict]:
+    def get_main_menu(self) -> OrdDict[OptionABC, OrdDict]:
         main_menu = MainMenu(self.writer, self.lcd_config, self.tick_rate)
         menu = main_menu.get_menu()
         return menu

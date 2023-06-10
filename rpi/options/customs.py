@@ -1,10 +1,7 @@
-import platform
-import psutil
-
 from options.abstracts import OptionABC
 from options.item import MenuItem
-
 from character.abstracts import CharABC
+from extensions.general import Processor, System
 
 
 class CPUArchBase(OptionABC):
@@ -24,7 +21,7 @@ class CPUArchBase(OptionABC):
 
     @staticmethod
     def _get_cpu_name() -> str:
-        cpu = platform.processor()
+        cpu = Processor().get_processor_name()
         return cpu
 
 
@@ -77,7 +74,7 @@ class CPUPercBase(OptionABC):
 
     @staticmethod
     def _get_cpu_perc() -> float:
-        perc = psutil.cpu_times_percent().user
+        perc = Processor().get_usage()
         return perc
 
 
@@ -130,7 +127,7 @@ class CPUFreqBase(OptionABC):
 
     @staticmethod
     def _get_cpu_freq() -> int:
-        freq = psutil.cpu_freq().current
+        freq = Processor().get_frequency()
         freq = int(freq)
         return freq
 
@@ -183,7 +180,7 @@ class CPUCoreCountBase(OptionABC):
 
     @staticmethod
     def _get_core_count() -> int:
-        core_count = psutil.cpu_count()
+        core_count = Processor().get_core_count()
         return core_count
 
 
@@ -236,7 +233,7 @@ class MemoryTotalBase(OptionABC):
 
     @staticmethod
     def _get_total_memory() -> float:
-        total_mem = psutil.virtual_memory().total
+        total_mem = System().get_total_memory_bytes()
         total_mem_gb = total_mem / 1024 / 1024 / 1024
         return total_mem_gb
 
@@ -290,7 +287,7 @@ class MemoryUsedBase(OptionABC):
 
     @staticmethod
     def _get_used_memory() -> float:
-        used_mem = psutil.virtual_memory().used
+        used_mem = System().get_used_memory_bytes()
         used_mem_gb = used_mem / 1024 / 1024 / 1024
         return used_mem_gb
 
@@ -344,7 +341,7 @@ class MemoryFreeBase(OptionABC):
 
     @staticmethod
     def _get_free_memory() -> float:
-        free_mem = psutil.virtual_memory().free
+        free_mem = System().get_free_memory_bytes()
         free_mem_gb = free_mem / 1024 / 1024 / 1024
         return free_mem_gb
 
@@ -398,7 +395,7 @@ class MemoryPercBase(OptionABC):
 
     @staticmethod
     def _get_memory_percentage() -> int:
-        mem_perc = psutil.virtual_memory().percent
+        mem_perc = System().get_memory_usage()
         mem_perc = int(mem_perc)
         return mem_perc
 

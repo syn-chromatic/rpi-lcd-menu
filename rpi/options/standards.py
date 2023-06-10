@@ -1,8 +1,6 @@
 from options.abstracts import OptionABC
-
 from options.events import ActionEvent, BoolEvent, IntEvent, StrEvent
 from options.item import MenuItem
-
 from character.abstracts import CharABC
 
 

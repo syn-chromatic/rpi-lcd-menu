@@ -1,4 +1,4 @@
-from typing import Callable
+from extensions.std.typing import Callable
 
 
 class ActionEvent:

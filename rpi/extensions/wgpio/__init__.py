@@ -1,5 +1,4 @@
 try:
-    raise Exception()
     import pigpio
     from .gpio import InputGPIO, OutputGPIO, I2CGPIO
 

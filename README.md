@@ -17,6 +17,8 @@ ___
 ## `➢` Installation (RPi)
 Tested on Ubuntu 23.04 using a Raspberry Pi 4.
 
+`Requires Python >= 3.10`
+
 ### `⤷` Installing Python Dependencies
 * `pip install -r requirements.txt`
 

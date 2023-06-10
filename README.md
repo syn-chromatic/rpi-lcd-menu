@@ -9,9 +9,9 @@
 
 ___
 ## `➢` Information
-* `rpi` for the Raspberry Pi 1/2/3/4
-* `rp2040-pico` for the Raspberry Pi Pico `(Untested)`
-* `rp2040-simulation` for Wowki Pico Simulation
+* `rpi` for the Raspberry Pi *[Python]*
+* `rp2040-pico` for the Raspberry Pi Pico *[MicroPython]* `Untested`
+* `rp2040-simulation` for Wowki Pico Simulation *[MicroPython]*
 
 ___
 ## `➢` Installation (RPi)

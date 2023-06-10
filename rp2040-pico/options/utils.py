@@ -13,7 +13,7 @@ class MenuCreator:
 
     def create(self) -> OrdDict[OptionABC, OrdDict]:
         if len(self.heads) != len(self.submenus):
-            raise Exception()
+            raise Exception("Heads and Submenus have different lengths.\n")
 
         menu = OrdDict()
 

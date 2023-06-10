@@ -8,7 +8,6 @@ from options.standards import (
     SActionOptionEvent,
     ActionOptionEvent,
     ListOptionEvent,
-    ToggleOption,
     ToggleOptionEvent,
 )
 
@@ -16,7 +15,7 @@ from options.item import MenuItem
 from options.utils import MenuCreator
 from options.events import IntEvent, StrEvent, ActionEvent
 
-# from devices.relay import RelayDevice
+from devices.relay import RelayDevice
 
 # For interchangeable compatibility with MicroPython
 from collections import OrderedDict as OrdDict
@@ -119,12 +118,11 @@ class DeviceControlMenu:
         return menu
 
     def get_manual_control(self) -> OrdDict[OptionABC, OrdDict]:
-        # pin = self.device_menu.pin
-        # relay = RelayDevice(pin)
-        # self.devices.append(relay)
-        # event = BoolEvent(relay.get_state, relay.set_state)
-        # gpio_state = ToggleOptionEvent("GPIO", self.get_menu_item(), event)
-        gpio_state = ToggleOption("GPIO", self.get_menu_item())
+        pin = self.device_menu.pin
+        relay = RelayDevice(pin)
+        self.devices.append(relay)
+        event = BoolEvent(relay.get_state, relay.set_state)
+        gpio_state = ToggleOptionEvent("GPIO", self.get_menu_item(), event)
         heads: list[OptionABC] = [gpio_state]
         submenus = [OrdDict()] * len(heads)
         submenu = MenuCreator(heads, submenus).create()

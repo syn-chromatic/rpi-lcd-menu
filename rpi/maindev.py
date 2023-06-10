@@ -9,7 +9,7 @@ from configurations import CtrlConfigABC, LCDConfigABC
 from configurations import CtrlConfig, LCD1602Config
 
 from menu.tickrate import Tickrate
-from menu.setups.default.main import MainMenu
+from menu.setups.dev.main import MainMenu
 
 # For interchangeable compatibility with MicroPython
 from collections import OrderedDict as OrdDict

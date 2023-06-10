@@ -7,8 +7,9 @@ from options.standards import StaticOption
 from options.item import MenuItem
 from options.utils import MenuCreator
 
-from menu.setups.default.config import ConfigurationMenu
-from menu.setups.default.system import SystemInfoMenu
+from menu.setups.dev.device import AddDeviceMenu
+from menu.setups.dev.config import ConfigurationMenu
+from menu.setups.dev.system import SystemInfoMenu
 
 # For interchangeable compatibility with MicroPython
 from collections import OrderedDict as OrdDict
@@ -30,16 +31,19 @@ class MainMenu:
         return MenuItem(columns)
 
     def get_heads(self) -> list[OptionABC]:
+        devices = StaticOption("Devices", self.get_menu_item())
         config = StaticOption("Configuration", self.get_menu_item())
         system_info = StaticOption("System Info", self.get_menu_item())
 
         heads: list[OptionABC] = [
+            devices,
             config,
             system_info,
         ]
         return heads
 
     def get_submenus(self) -> list[OrdDict]:
+        devices_menu = AddDeviceMenu(self.lcd_config)
         config_menu = ConfigurationMenu(
             self.writer,
             self.lcd_config,
@@ -48,6 +52,7 @@ class MainMenu:
         system_menu = SystemInfoMenu(self.lcd_config)
 
         submenus: list[OrdDict] = [
+            devices_menu.get_menu(),
             config_menu.get_menu(),
             system_menu.get_menu(),
         ]

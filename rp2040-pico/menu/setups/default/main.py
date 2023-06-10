@@ -11,6 +11,9 @@ from menu.setups.default.device import AddDeviceMenu
 from menu.setups.default.config import ConfigurationMenu
 from menu.setups.default.system import SystemInfoMenu
 
+# For interchangeable compatibility with MicroPython
+from collections import OrderedDict as OrdDict
+
 
 class MainMenu:
     def __init__(
@@ -39,7 +42,7 @@ class MainMenu:
         ]
         return heads
 
-    def get_submenus(self) -> list[dict]:
+    def get_submenus(self) -> list[OrdDict]:
         devices_menu = AddDeviceMenu(self.lcd_config)
         config_menu = ConfigurationMenu(
             self.writer,
@@ -48,14 +51,14 @@ class MainMenu:
         )
         system_menu = SystemInfoMenu(self.lcd_config)
 
-        submenus: list[dict] = [
+        submenus: list[OrdDict] = [
             devices_menu.get_menu(),
             config_menu.get_menu(),
             system_menu.get_menu(),
         ]
         return submenus
 
-    def get_menu(self) -> dict[OptionABC, dict]:
+    def get_menu(self) -> OrdDict[OptionABC, OrdDict]:
         heads = self.get_heads()
         submenus = self.get_submenus()
         menu = MenuCreator(heads, submenus).create()

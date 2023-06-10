@@ -6,6 +6,9 @@ from options.customs import MemoryTotal, MemoryFree, MemoryUsed, MemoryPerc
 from options.item import MenuItem
 from options.utils import MenuCreator
 
+# For interchangeable compatibility with MicroPython
+from collections import OrderedDict as OrdDict
+
 
 class SystemInfoMenu:
     def __init__(self, lcd_config: LCDConfigABC):
@@ -37,11 +40,11 @@ class SystemInfoMenu:
         ]
         return heads
 
-    def get_submenus(self, heads: list[OptionABC]) -> list[dict]:
-        submenus = [{}] * len(heads)
+    def get_submenus(self, heads: list[OptionABC]) -> list[OrdDict]:
+        submenus = [OrdDict()] * len(heads)
         return submenus
 
-    def get_menu(self) -> dict[OptionABC, dict]:
+    def get_menu(self) -> OrdDict[OptionABC, OrdDict]:
         heads = self.get_heads()
         submenus = self.get_submenus(heads)
         menu = MenuCreator(heads, submenus).create()

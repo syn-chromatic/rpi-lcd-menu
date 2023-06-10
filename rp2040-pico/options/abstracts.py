@@ -1,4 +1,4 @@
-from std.abc import ABC, abstractmethod
+from extensions.std.abc import ABC, abstractmethod
 from options.item import MenuItem
 
 from character.abstracts import CharABC
@@ -25,15 +25,15 @@ class OptionABC(ABC):
         pass
 
     @abstractmethod
-    def get_hold_state(self) -> bool: # type: ignore
+    def get_hold_state(self) -> bool:
         pass
 
     @abstractmethod
-    def get_char_array(self) -> list[CharABC]: # type: ignore
+    def get_char_array(self) -> list[CharABC]:
         pass
 
     @abstractmethod
-    def get_item(self) -> MenuItem: # type: ignore
+    def get_item(self) -> MenuItem:
         pass
 
     @abstractmethod
@@ -43,4 +43,3 @@ class OptionABC(ABC):
     @abstractmethod
     def update_shift(self):
         pass
-

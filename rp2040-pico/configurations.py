@@ -1,4 +1,4 @@
-from std.abc import ABC, abstractmethod
+from extensions.std.abc import ABC, abstractmethod
 
 
 class CtrlConfigABC(ABC):

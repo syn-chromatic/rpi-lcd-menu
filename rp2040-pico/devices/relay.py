@@ -1,4 +1,4 @@
-from wgpio import OutputGPIO
+from extensions.wgpio import OutputGPIO
 
 
 class RelayDevice:

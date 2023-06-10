@@ -2,23 +2,28 @@ from options.abstracts import OptionABC
 from character.abstracts import CharABC
 from character.chars import SpaceChar
 
+from extensions.std.typing import Optional
+
+# For interchangeable compatibility with MicroPython
+from collections import OrderedDict as OrdDict
+
 
 class MenuCoordinatorBase:
-    def __init__(self, rows: int, columns: int, options: dict[OptionABC, dict]):
+    def __init__(self, rows: int, columns: int, options: OrdDict[OptionABC, OrdDict]):
         self._rows: int = rows
         self._columns: int = columns
         self._selected: int = 0
-        self._options: dict[OptionABC, dict] = options
+        self._options: OrdDict[OptionABC, OrdDict] = options
         self._entries: list[tuple[int, OptionABC]] = []
         self._initiate_options(self._options)
 
-    def _initiate_options(self, options: dict[OptionABC, dict]):
+    def _initiate_options(self, options: OrdDict[OptionABC, OrdDict]):
         for option in options.keys():
             option_item = option.get_item()
             option_item.set_selected(True)
             return
 
-    def _get_options(self) -> dict[OptionABC, dict]:
+    def _get_options(self) -> OrdDict[OptionABC, OrdDict]:
         options = self._options
         for _, entry_option in self._entries:
             if entry_option in options:
@@ -75,13 +80,15 @@ class MenuCoordinatorBase:
             option.get_item().set_selected(False)
             option.get_item().reset()
 
-    def _get_option(self, options_list: list[OptionABC], idx: int):
+    def _get_option(
+        self, options_list: list[OptionABC], idx: int
+    ) -> Optional[OptionABC]:
         if len(options_list) > idx:
             return options_list[idx]
 
 
 class MenuCoordinator(MenuCoordinatorBase):
-    def __init__(self, rows: int, columns: int, options: dict[OptionABC, dict]):
+    def __init__(self, rows: int, columns: int, options: OrdDict[OptionABC, OrdDict]):
         super().__init__(rows, columns, options)
 
     def get_increment_select(self, select: int, options_list: list[OptionABC]) -> int:

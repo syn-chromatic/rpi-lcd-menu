@@ -1,4 +1,4 @@
-from machine import Pin, I2C # type: ignore
+from machine import Pin, I2C
 
 
 class InputGPIOBase:

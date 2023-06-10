@@ -1,5 +1,5 @@
-from wgpio import InputGPIO
-from std.typing import Optional, Literal
+from extensions.wgpio import InputGPIO
+from extensions.std.typing import Optional, Literal
 
 
 class RotaryEncoderBase:

@@ -1,4 +1,4 @@
-from std.abc import ABC, abstractmethod
+from extensions.std.abc import ABC, abstractmethod
 from character.abstracts import CharABC
 
 
@@ -20,5 +20,5 @@ class WriterABC(ABC):
         pass
 
     @abstractmethod
-    def get_backlight_state(self) -> bool: # type: ignore
+    def get_backlight_state(self) -> bool:
         pass

@@ -18,6 +18,9 @@ from options.events import IntEvent, StrEvent, ActionEvent
 
 # from devices.relay import RelayDevice
 
+# For interchangeable compatibility with MicroPython
+from collections import OrderedDict as OrdDict
+
 
 class DeviceMenu:
     def __init__(self):
@@ -66,7 +69,7 @@ class DeviceInfoMenu:
         columns = self.lcd_config.lcd_columns
         return MenuItem(columns)
 
-    def get_info_menu(self) -> dict[OptionABC, dict]:
+    def get_info_menu(self) -> OrdDict[OptionABC, OrdDict]:
         _gpio = self.device_menu.get_gpio_mode()
         _pin = self.device_menu.get_pin()
         _type = self.device_menu.get_type()
@@ -83,7 +86,7 @@ class DeviceInfoMenu:
         ctrl_option = StaticOption(ctrl_name, self.get_menu_item())
 
         heads: list[OptionABC] = [gpio_option, pin_option, type_option, ctrl_option]
-        submenus = [{}] * len(heads)
+        submenus = [OrdDict()] * len(heads)
         submenu = MenuCreator(heads, submenus).create()
 
         control_option = StaticOption("Info", self.get_menu_item())
@@ -103,10 +106,10 @@ class DeviceControlMenu:
         columns = self.lcd_config.lcd_columns
         return MenuItem(columns)
 
-    def get_scheduled_control(self) -> dict[OptionABC, dict]:
+    def get_scheduled_control(self) -> OrdDict[OptionABC, OrdDict]:
         gpio_state = StaticOption("[Add Schedule]", self.get_menu_item())
         heads: list[OptionABC] = [gpio_state]
-        submenus = [{}] * len(heads)
+        submenus = [OrdDict()] * len(heads)
         submenu = MenuCreator(heads, submenus).create()
 
         control_option = StaticOption("Control", self.get_menu_item())
@@ -115,7 +118,7 @@ class DeviceControlMenu:
         menu = MenuCreator(heads, submenus).create()
         return menu
 
-    def get_manual_control(self) -> dict[OptionABC, dict]:
+    def get_manual_control(self) -> OrdDict[OptionABC, OrdDict]:
         # pin = self.device_menu.pin
         # relay = RelayDevice(pin)
         # self.devices.append(relay)
@@ -123,7 +126,7 @@ class DeviceControlMenu:
         # gpio_state = ToggleOptionEvent("GPIO", self.get_menu_item(), event)
         gpio_state = ToggleOption("GPIO", self.get_menu_item())
         heads: list[OptionABC] = [gpio_state]
-        submenus = [{}] * len(heads)
+        submenus = [OrdDict()] * len(heads)
         submenu = MenuCreator(heads, submenus).create()
 
         control_option = StaticOption("Control", self.get_menu_item())
@@ -132,7 +135,7 @@ class DeviceControlMenu:
         menu = MenuCreator(heads, submenus).create()
         return menu
 
-    def get_control_menu(self) -> dict[OptionABC, dict]:
+    def get_control_menu(self) -> OrdDict[OptionABC, OrdDict]:
         control = self.device_menu.get_control()
         if control == "Manual":
             menu = self.get_manual_control()
@@ -145,7 +148,7 @@ class AddDeviceMenuBase:
     def __init__(self, lcd_config: LCDConfigABC):
         self._lcd_config = lcd_config
         self._device_menu = DeviceMenu()
-        self._add_device_submenu = {}
+        self._add_device_submenu = OrdDict()
         self._menu = self._get_menu()
 
     def _get_menu_item(self) -> MenuItem:
@@ -160,7 +163,7 @@ class AddDeviceMenuBase:
     def _get_add_device_option(self) -> ActionOptionEvent:
         name = "[Add Device]"
         menu_item = self._get_menu_item()
-        event = ActionEvent(self._set_add_device_submenu)  # type: ignore
+        event = ActionEvent(self._set_add_device_submenu)
         option = ActionOptionEvent(name, menu_item, event)
         return option
 
@@ -170,7 +173,7 @@ class AddDeviceMenuBase:
         menu_item = self._get_menu_item()
         get_gpio = self._device_menu.get_gpio_mode
         set_gpio = self._device_menu.set_gpio_mode
-        event = StrEvent(get_gpio, set_gpio)  # type: ignore
+        event = StrEvent(get_gpio, set_gpio)
         option = ListOptionEvent(name, menu_item, event, item_list)
         return option
 
@@ -179,7 +182,7 @@ class AddDeviceMenuBase:
         menu_item = self._get_menu_item()
         get_pin = self._device_menu.get_pin
         set_pin = self._device_menu.set_pin
-        event = IntEvent(get_pin, set_pin)  # type: ignore
+        event = IntEvent(get_pin, set_pin)
         option = RangeOptionEvent(name, menu_item, event, 1, 0, 40)
         return option
 
@@ -189,7 +192,7 @@ class AddDeviceMenuBase:
         menu_item = self._get_menu_item()
         get_type = self._device_menu.get_type
         set_type = self._device_menu.set_type
-        event = StrEvent(get_type, set_type)  # type: ignore
+        event = StrEvent(get_type, set_type)
         option = ListOptionEvent(name, menu_item, event, item_list)
         return option
 
@@ -199,14 +202,14 @@ class AddDeviceMenuBase:
         menu_item = self._get_menu_item()
         get_control = self._device_menu.get_control
         set_control = self._device_menu.set_control
-        event = StrEvent(get_control, set_control)  # type: ignore
+        event = StrEvent(get_control, set_control)
         option = ListOptionEvent(name, menu_item, event, item_list)
         return option
 
     def _delete_device(self, device_option: OptionABC):
         self._menu.pop(device_option)
 
-    def _create_new_device(self) -> dict[OptionABC, dict]:
+    def _create_new_device(self) -> OrdDict[OptionABC, OrdDict]:
         pin = self._device_menu.get_pin()
         name = f"Device ({pin})"
         menu_item = self._get_menu_item()
@@ -217,7 +220,7 @@ class AddDeviceMenuBase:
 
         info_menu = device_info.get_info_menu()
         control_menu = device_control.get_control_menu()
-        submenus = {**info_menu, **control_menu}
+        submenus = OrdDict(list(info_menu.items()) + list(control_menu.items()))
 
         heads: list[OptionABC] = [option]
         submenus = [submenus]
@@ -233,7 +236,7 @@ class AddDeviceMenuBase:
         name = "[Confirm]"
         success_name = "[Added]"
         menu_item = self._get_menu_item()
-        event = ActionEvent(self._add_device_to_menu)  # type: ignore
+        event = ActionEvent(self._add_device_to_menu)
         option = SActionOptionEvent(name, success_name, menu_item, event)
         return option
 
@@ -253,17 +256,17 @@ class AddDeviceMenuBase:
         ]
         return heads
 
-    def _get_submenus(self, heads: list[OptionABC]) -> list[dict]:
-        submenus = [{}] * len(heads)
+    def _get_submenus(self, heads: list[OptionABC]) -> list[OrdDict]:
+        submenus = [OrdDict()] * len(heads)
         return submenus
 
-    def _get_add_device_menu(self) -> dict[OptionABC, dict]:
+    def _get_add_device_menu(self) -> OrdDict[OptionABC, OrdDict]:
         heads = self._get_heads()
         submenus = self._get_submenus(heads)
         menu = MenuCreator(heads, submenus).create()
         return menu
 
-    def _get_menu(self) -> dict[OptionABC, dict]:
+    def _get_menu(self) -> OrdDict[OptionABC, OrdDict]:
         add_device = self._get_add_device_option()
         heads: list[OptionABC] = [add_device]
         submenus = [self._add_device_submenu]
@@ -275,5 +278,5 @@ class AddDeviceMenu(AddDeviceMenuBase):
     def __init__(self, lcd_config: LCDConfigABC):
         super().__init__(lcd_config)
 
-    def get_menu(self) -> dict[OptionABC, dict]:
+    def get_menu(self) -> OrdDict[OptionABC, OrdDict]:
         return self._menu

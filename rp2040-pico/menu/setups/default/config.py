@@ -11,6 +11,9 @@ from options.item import MenuItem
 from options.utils import MenuCreator
 from options.events import BoolEvent, IntEvent
 
+# For interchangeable compatibility with MicroPython
+from collections import OrderedDict as OrdDict
+
 
 class ConfigurationMenu:
     def __init__(
@@ -30,7 +33,7 @@ class ConfigurationMenu:
     def get_backlight_option(self) -> ToggleOptionEvent:
         get_backlight = self.writer.get_backlight_state
         set_backlight = self.writer.set_backlight
-        backlight_event = BoolEvent(get_backlight, set_backlight) # type: ignore
+        backlight_event = BoolEvent(get_backlight, set_backlight)
 
         bl_name = "Backlight"
         bl_item = self.get_menu_item()
@@ -41,12 +44,12 @@ class ConfigurationMenu:
     def get_tick_option(self) -> RangeOptionEvent:
         get_tickrate = self.tickrate.get_tickrate
         set_tickrate = self.tickrate.set_tickrate
-        tick_event = IntEvent(get_tickrate, set_tickrate) # type: ignore
+        tick_event = IntEvent(get_tickrate, set_tickrate)
 
         tick_name = "Tickrate"
         tick_item = self.get_menu_item()
         tick_step = 5
-        tick_min_range = 10
+        tick_min_range = 0
         tick_max_range = 90
 
         tick_option = RangeOptionEvent(
@@ -86,11 +89,11 @@ class ConfigurationMenu:
         ]
         return heads
 
-    def get_submenus(self, heads: list[OptionABC]) -> list[dict]:
-        submenus = [{}] * len(heads)
+    def get_submenus(self, heads: list[OptionABC]) -> list[OrdDict]:
+        submenus = [OrdDict()] * len(heads)
         return submenus
 
-    def get_menu(self) -> dict[OptionABC, dict]:
+    def get_menu(self) -> OrdDict[OptionABC, OrdDict]:
         heads = self.get_heads()
         submenus = self.get_submenus(heads)
         menu = MenuCreator(heads, submenus).create()

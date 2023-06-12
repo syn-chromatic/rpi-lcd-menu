@@ -1,6 +1,6 @@
-from gc import mem_alloc, mem_free
 from machine import freq
 from machine import Pin, I2C
+from gc import mem_alloc, mem_free
 
 
 class abstractmethod:
@@ -48,7 +48,8 @@ class InputGPIO(InputGPIOBase):
 
 class OutputGPIOBase:
     def __init__(self, pin: int):
-        self._pin = Pin(pin, Pin.OUT)
+        self._pin = pin
+        self._handle = Pin(pin, Pin.OUT)
 
 
 class OutputGPIO(OutputGPIOBase):
@@ -56,14 +57,14 @@ class OutputGPIO(OutputGPIOBase):
         super().__init__(pin)
 
     def write(self, state: bool):
-        self._pin.value(int(state))
+        self._handle.value(int(state))
 
 
 class I2CGPIOBase:
     def __init__(self, bus: int, address: int):
-        self._handle = self._register_i2c(bus)
         self._bus = bus
         self._address = address
+        self._handle = self._register_i2c(bus)
 
     def _register_i2c(self, bus: int) -> I2C:
         return I2C(bus, sda=Pin(0), scl=Pin(1))

@@ -227,15 +227,15 @@ class MemoryTotalBase(OptionABC):
         return self._value
 
     def _update_menu_item(self):
-        string = "TMem: {:.1f}GB"
+        string = "TMem: {:.1f}KB"
         string = string.format(self._get_value())
         self._item.set_string(string)
 
     @staticmethod
     def _get_total_memory() -> float:
         total_mem = System().get_total_memory_bytes()
-        total_mem_gb = total_mem / 1024 / 1024 / 1024
-        return total_mem_gb
+        total_mem_kb = total_mem / 1024
+        return total_mem_kb
 
 
 class MemoryTotal(MemoryTotalBase):
@@ -281,15 +281,15 @@ class MemoryUsedBase(OptionABC):
         return self._value
 
     def _update_menu_item(self):
-        string = "UMem: {:.1f}GB"
+        string = "UMem: {:.1f}KB"
         string = string.format(self._get_value())
         self._item.set_string(string)
 
     @staticmethod
     def _get_used_memory() -> float:
         used_mem = System().get_used_memory_bytes()
-        used_mem_gb = used_mem / 1024 / 1024 / 1024
-        return used_mem_gb
+        used_mem_kb = used_mem / 1024
+        return used_mem_kb
 
 
 class MemoryUsed(MemoryUsedBase):
@@ -335,15 +335,15 @@ class MemoryFreeBase(OptionABC):
         return self._value
 
     def _update_menu_item(self):
-        string = "FMem: {:.1f}GB"
+        string = "FMem: {:.1f}KB"
         string = string.format(self._get_value())
         self._item.set_string(string)
 
     @staticmethod
     def _get_free_memory() -> float:
         free_mem = System().get_free_memory_bytes()
-        free_mem_gb = free_mem / 1024 / 1024 / 1024
-        return free_mem_gb
+        free_mem_kb = free_mem / 1024
+        return free_mem_kb
 
 
 class MemoryFree(MemoryFreeBase):

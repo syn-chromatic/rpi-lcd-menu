@@ -15,7 +15,7 @@ class LCDWriterBase(WriterABC):
         self._row_data: list[list[CharABC]] = [[]] * rows
 
     def _get_lcd_api(self) -> LCDAPI:
-        lcd = LCDAPI(1, 0x27, self._rows, self._columns)
+        lcd = LCDAPI(0, 0x27, self._rows, self._columns)
         return lcd
 
     def _set_row_state(self, chars: list[CharABC], row: int):
